@@ -1,29 +1,29 @@
-import { useState, useEffect } from 'react';
-import './App.css';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './contexts/AuthContext';
+import { ProtectedRoute } from './components/ProtectedRoute';
+import { Login } from './pages/Login';
+import { Signup } from './pages/Signup';
+import { Home } from './pages/Home';
 
 function App() {
-  const [apiStatus, setApiStatus] = useState<string>('Checking...');
-
-  useEffect(() => {
-    // Check backend API connection
-    fetch('/api/health')
-      .then(res => res.json())
-      .then(data => setApiStatus(data.message))
-      .catch(() => setApiStatus('Backend not connected'));
-  }, []);
-
   return (
-    <div className="App">
-      <header className="App-header">
-        <h1>🚀 Sleekflow To-Do List</h1>
-        <p>Welcome to your to-do list application!</p>
-        <div className="status-card">
-          <p><strong>Backend Status:</strong> {apiStatus}</p>
-          <p><strong>Frontend:</strong> Running ✅</p>
-          <p><strong>Environment:</strong> {import.meta.env.MODE}</p>
-        </div>
-      </header>
-    </div>
+    <BrowserRouter>
+      <AuthProvider>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <Home />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </AuthProvider>
+    </BrowserRouter>
   );
 }
 
