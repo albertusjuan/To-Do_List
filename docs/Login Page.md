@@ -1,56 +1,74 @@
-# 🔐 Authentication System - Complete Guide
+# 🔐 Authentication System - Login Page
 
-## ✅ What Has Been Built
+## ✅ Current Features
 
-A complete authentication system with:
-- **Login Page** - Sign in with email/password
-- **Signup Page** - Register new users
-- **Protected Routes** - Secure your pages
-- **Authentication Context** - Manages user state globally
-- **Home/Dashboard** - Landing page after login
+A complete authentication system with modern design:
+- **Login Page** - "TODO." branding with email/password sign in
+- **Signup Page** - User registration with name, email, and password
+- **Protected Routes** - Secure pages for authenticated users only
+- **Authentication Context** - Global user state management
+- **Home/Dashboard** - Welcome page after successful login
 
 ---
 
-## 📁 New Files Created
+## 🎨 Design System
+
+### **Color Palette:**
+- **Background:** Light gradient `#f5f7fa → #c3cfe2`
+- **Cards:** White glass with blur effects
+- **Primary:** Black `#000000`
+- **Text:** Slate tones `#1e293b`, `#475569`, `#64748b`
+- **Accent:** Clean black with subtle shadows
+
+### **Typography:**
+- **Heading:** "TODO." - 600 weight (semibold), 2.5rem
+- **Font:** SF Pro Display, -apple-system
+- **Letter Spacing:** Tight (-1px for headings)
+
+### **Glassmorphism:**
+- White frosted glass cards
+- `backdrop-filter: blur(20px)`
+- Rounded corners (16px cards, 10px inputs)
+- Subtle shadows for depth
+
+---
+
+## 📁 File Structure
 
 ```
 frontend/src/
 ├── contexts/
-│   └── AuthContext.tsx          # Auth state management
+│   └── AuthContext.tsx          # Auth state & Supabase integration
 ├── components/
-│   └── ProtectedRoute.tsx       # Route protection
+│   └── ProtectedRoute.tsx       # Route protection wrapper
 ├── pages/
-│   ├── Login.tsx                # Login page
-│   ├── Signup.tsx               # Signup page
+│   ├── Login.tsx                # Login form
+│   ├── Signup.tsx               # Registration form with name field
 │   ├── Home.tsx                 # Dashboard after login
-│   ├── Auth.css                 # Auth pages styling
-│   └── Home.css                 # Home page styling
-├── vite-env.d.ts                # TypeScript definitions
-└── App.tsx                      # Updated with routing
+│   ├── Auth.css                 # Login/Signup styling
+│   └── Home.css                 # Dashboard styling
+├── config/
+│   └── supabase.ts              # Supabase client configuration
+├── vite-env.d.ts                # TypeScript environment definitions
+├── App.tsx                      # Routing setup
+└── index.css                    # Global styles
 ```
 
 ---
 
-## 🔧 Step 1: Configure Supabase (REQUIRED)
+## 🔧 Supabase Setup
 
-### In Supabase Dashboard:
+### Prerequisites:
+1. Go to https://supabase.com
+2. Create a new project (or use existing)
+3. Enable Email Authentication:
+   - **Authentication** → **Providers** → Enable **Email**
+4. Get your credentials:
+   - **Settings** → **API**
+   - Copy: Project URL and anon/public key
 
-1. **Go to** https://supabase.com and sign in
-2. **Create a new project** (or use existing)
-3. **Enable Email Authentication:**
-   - Go to **Authentication** → **Providers**
-   - Enable **Email** provider
-   - **Disable "Confirm Email"** for testing (optional)
-     - Go to **Authentication** → **Settings**
-     - Turn off "Enable email confirmations" (for development only)
-
-4. **Get Your Credentials:**
-   - Go to **Settings** → **API**
-   - Copy:
-     - Project URL
-     - `anon` `public` key
-
-5. **Update `.env` file in project root:**
+### Configure Environment:
+Update `.env` in project root:
 
 ```env
 VITE_SUPABASE_URL=https://your-project-id.supabase.co
@@ -63,92 +81,147 @@ ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000
 
 ---
 
-## 🚀 Step 2: Test the Application
+## 📝 Login Page (`/login`)
 
-### Start the Servers:
+### Features:
+- "TODO." heading (semibold, not bold)
+- Email input field
+- Password input field
+- Black submit button
+- Link to signup page
+- Error message display
+- Clean, minimal design
 
-```bash
-npm run dev
+### Form Validation:
+- Email format validation
+- Required fields
+- Error messages from Supabase
+
+### User Flow:
+```
+User enters credentials
+    ↓
+Click "Sign In"
+    ↓
+Supabase validates
+    ↓
+Success: Redirect to Home (/)
+Error: Display error message
 ```
 
-This starts both frontend (http://localhost:5173) and backend (http://localhost:5000)
+---
 
-### Test Flow:
+## 📝 Signup Page (`/signup`)
 
-1. **Visit** http://localhost:5173
-2. You'll be redirected to `/login` (not logged in yet)
-3. Click **"Sign up"** to create an account
-4. Enter email and password (min 6 characters)
-5. After signup, you'll be redirected to login
-6. Sign in with your credentials
-7. You'll be taken to the **Home** page (protected route)
+### Features:
+- "TODO." heading
+- **Name input field** (new!)
+- Email input field
+- Password input field
+- Confirm password field
+- Black submit button
+- Link to login page
+
+### Form Fields:
+
+1. **Name** (required)
+   - Stored in Supabase user metadata
+   - For future team features
+   - Validation: Cannot be empty
+
+2. **Email** (required)
+   - Email format validation
+   - Unique per user
+
+3. **Password** (required)
+   - Minimum 6 characters
+   - Validation on client side
+
+4. **Confirm Password** (required)
+   - Must match password field
+
+### User Flow:
+```
+User fills form (name, email, password)
+    ↓
+Click "Sign Up"
+    ↓
+Validation checks pass
+    ↓
+Supabase creates account
+    ↓
+Success message displayed
+    ↓
+Auto-redirect to login
+```
+
+### Name Field Implementation:
+
+**In Signup.tsx:**
+```typescript
+const { error } = await signUp(email, password, name);
+```
+
+**In AuthContext.tsx:**
+```typescript
+const signUp = async (email: string, password: string, name?: string) => {
+  const { error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: {
+        name: name || '',
+      }
+    }
+  });
+  return { error };
+};
+```
+
+The name is stored in Supabase user metadata and can be accessed later for:
+- User profile display
+- Team member identification
+- Personalization
+- Collaboration features
 
 ---
 
-## 📋 How the Authentication Works
+## 🏠 Home Page (`/`)
 
-### 1. **AuthContext** (`contexts/AuthContext.tsx`)
-Manages authentication state across the entire app:
-- Tracks current user
-- Provides `signUp`, `signIn`, `signOut` functions
-- Listens for auth changes automatically
+### Protected Route:
+- Only accessible when logged in
+- Redirects to `/login` if not authenticated
+- Shows loading state while checking auth
 
-### 2. **Login Page** (`pages/Login.tsx`)
-- Email/password form
-- Validates and signs in user
-- Redirects to home on success
-- Shows error messages
-
-### 3. **Signup Page** (`pages/Signup.tsx`)
-- Registration form
-- Password confirmation
-- Creates new user in Supabase
-- Shows success message
-
-### 4. **Protected Route** (`components/ProtectedRoute.tsx`)
-Wraps pages that require authentication:
-- Checks if user is logged in
-- Shows loading state while checking
-- Redirects to login if not authenticated
-
-### 5. **Home Page** (`pages/Home.tsx`)
-Main dashboard after login:
-- Shows user email
-- Displays user info
-- Has sign out button
+### Features:
+- Glass navbar with "TODO." branding
+- User email display
+- Sign out button
+- Welcome message with user info
+- Info cards showing:
+  - User ID
+  - Email
+  - Authentication status
 
 ---
 
-## 🔐 Security Features
+## 🔐 Authentication Context
 
-✅ **Secure Password Hashing** - Supabase handles this automatically  
-✅ **JWT Tokens** - Session management with secure tokens  
-✅ **HTTP-Only Cookies** - Supabase uses secure storage  
-✅ **Email Verification** - Can be enabled in Supabase settings  
-✅ **Password Requirements** - Minimum 6 characters enforced  
-✅ **Protected Routes** - Unauthorized users can't access  
+**Location:** `frontend/src/contexts/AuthContext.tsx`
 
----
+### Provides:
+```typescript
+{
+  user: User | null;
+  loading: boolean;
+  signUp: (email, password, name?) => Promise<{error}>;
+  signIn: (email, password) => Promise<{error}>;
+  signOut: () => Promise<void>;
+}
+```
 
-## 🗄️ Database Structure
-
-Supabase automatically creates an `auth.users` table with:
-- `id` (UUID) - Unique user identifier
-- `email` - User's email address
-- `encrypted_password` - Securely hashed password
-- `created_at` - Registration timestamp
-- `last_sign_in_at` - Last login time
-- `email_confirmed_at` - Email verification time
-
-**You don't need to create any tables manually for authentication!**
-
----
-
-## 📝 Code Examples
-
-### Using Auth in Components:
-
-```tsx
+### Usage in Components:
+```typescript
 import { useAuth } from '../contexts/AuthContext';
 
 function MyComponent() {
@@ -163,155 +236,256 @@ function MyComponent() {
 }
 ```
 
-### Protecting a Route:
+---
 
-```tsx
+## 🛡️ Protected Routes
+
+**Location:** `frontend/src/components/ProtectedRoute.tsx`
+
+### How It Works:
+```typescript
 <Route
-  path="/my-protected-page"
+  path="/"
   element={
     <ProtectedRoute>
-      <MyProtectedComponent />
+      <Home />
     </ProtectedRoute>
   }
 />
 ```
 
-### Getting User Info:
-
-```tsx
-const { user } = useAuth();
-
-console.log(user?.id);        // User ID
-console.log(user?.email);     // User email
-console.log(user?.created_at); // Registration date
-```
+### Behavior:
+1. Check if user is authenticated
+2. If loading: Show loading spinner
+3. If not logged in: Redirect to `/login`
+4. If logged in: Render children
 
 ---
 
-## 🛠️ Customization Options
+## 🎨 Styling Details
 
-### Change Password Requirements:
+### Auth Pages (Login/Signup):
 
-In `Signup.tsx`, modify:
-```tsx
-if (password.length < 6) {
-  return setError('Password must be at least 6 characters');
-}
+**Container:**
+- Light gradient background
+- Centered card layout
+- Glassmorphism effects
+
+**Card:**
+```css
+background: rgba(255, 255, 255, 0.9);
+backdrop-filter: blur(20px);
+border-radius: 16px;
+box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
 ```
 
-### Add Email Confirmation:
+**Inputs:**
+```css
+background: #ffffff;
+border: 2px solid #e5e5e5;
+border-radius: 10px;
+/* On focus: */
+border-color: #000000;
+box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+```
 
-In Supabase Dashboard:
-1. Go to **Authentication** → **Settings**
-2. Enable "Enable email confirmations"
-3. Configure email templates
+**Button:**
+```css
+background: #000000;
+color: #ffffff;
+border-radius: 10px;
+/* On hover: */
+background: #1a1a1a;
+box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+transform: translateY(-2px);
+```
 
-### Add Social Login (Google, GitHub, etc.):
+### Home Page:
 
-In Supabase Dashboard:
-1. Go to **Authentication** → **Providers**
-2. Enable desired provider (Google, GitHub, etc.)
-3. Configure OAuth credentials
-4. Update `AuthContext.tsx` to add social login methods
+**Navbar:**
+- White glass with blur
+- Sticky positioning
+- Subtle border and shadow
 
-### Customize Styling:
-
-Edit these files:
-- `pages/Auth.css` - Login/Signup styling
-- `pages/Home.css` - Home page styling
+**Content Cards:**
+- White glass background
+- Rounded 16px corners
+- Black accents and borders
 
 ---
 
-## 🔍 Troubleshooting
+## 🔄 User Flows
+
+### New User Registration:
+1. Visit app → Redirect to `/login`
+2. Click "Sign up" link
+3. Fill form: Name, Email, Password, Confirm Password
+4. Click "Sign Up"
+5. Success message shown
+6. Auto-redirect to login after 2 seconds
+7. Enter credentials and sign in
+8. Redirect to home page
+
+### Returning User:
+1. Visit app → Redirect to `/login`
+2. Enter email and password
+3. Click "Sign In"
+4. Redirect to home page
+5. View personalized dashboard
+
+### Sign Out:
+1. Click "Sign Out" button in navbar
+2. Supabase clears session
+3. Redirect to `/login`
+
+---
+
+## 🗄️ Database Structure
+
+### Supabase `auth.users` table:
+Automatically created by Supabase Auth:
+
+```sql
+- id (UUID) - Unique user identifier
+- email (TEXT) - User's email address
+- encrypted_password (TEXT) - Securely hashed
+- created_at (TIMESTAMP) - Registration date
+- last_sign_in_at (TIMESTAMP) - Last login
+- raw_user_meta_data (JSONB) - Contains { name: "User Name" }
+```
+
+**No manual table creation needed for authentication!**
+
+---
+
+## 🚀 Testing
+
+### Start the Application:
+```bash
+npm run dev
+```
+
+Servers will start:
+- Frontend: http://localhost:5173
+- Backend: http://localhost:5000
+
+### Test Flow:
+1. **Visit** http://localhost:5173
+2. **Redirected to** `/login`
+3. **Click** "Sign up"
+4. **Enter:**
+   - Name: Your Name
+   - Email: test@example.com
+   - Password: password123
+   - Confirm: password123
+5. **Click** "Sign Up"
+6. **See** success message
+7. **Wait** for redirect to login
+8. **Sign in** with same credentials
+9. **See** home page with your info
+
+---
+
+## 🐛 Troubleshooting
 
 ### "Invalid login credentials"
 - Check email/password are correct
-- Ensure email confirmation is disabled (for testing)
-- Check Supabase credentials in `.env`
+- Ensure email confirmation is disabled in Supabase (for testing)
+- Verify Supabase credentials in `.env`
 
-### Redirects to login immediately
-- Clear browser cookies/local storage
-- Check if Supabase URL/Key are correct
-- Open browser console for error messages
+### "Backend not connected"
+- Ensure both servers are running (`npm run dev`)
+- Check backend is on port 5000
+- Verify CORS settings
 
-### "Failed to fetch"
-- Ensure `.env` file has correct Supabase credentials
-- Check internet connection
-- Verify Supabase project is active
+### Signup not working
+- Check all fields are filled
+- Verify passwords match
+- Ensure name field is not empty
+- Check browser console for errors
 
-### Email not receiving verification
-- Check Supabase email settings
-- For development, disable email confirmation
-- Check spam folder
+### Name not saving
+- Verify Supabase credentials
+- Check browser console for errors
+- Ensure AuthContext is properly updated
 
 ---
 
-## 🎯 Next Steps
+## ✨ Design Features
 
-Now that authentication works, you can:
+### Glassmorphism:
+- ✅ Frosted glass cards
+- ✅ Backdrop blur effects
+- ✅ Translucent surfaces
+- ✅ Subtle shadows
 
-1. **Create Todo Database Table:**
-   ```sql
-   CREATE TABLE todos (
-     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-     user_id UUID REFERENCES auth.users NOT NULL,
-     title TEXT NOT NULL,
-     completed BOOLEAN DEFAULT false,
-     created_at TIMESTAMPTZ DEFAULT NOW()
-   );
-   
-   -- Enable Row Level Security
-   ALTER TABLE todos ENABLE ROW LEVEL SECURITY;
-   
-   -- Users can only see their own todos
-   CREATE POLICY "Users can view own todos" ON todos
-     FOR SELECT USING (auth.uid() = user_id);
-   
-   CREATE POLICY "Users can create own todos" ON todos
-     FOR INSERT WITH CHECK (auth.uid() = user_id);
-   
-   CREATE POLICY "Users can update own todos" ON todos
-     FOR UPDATE USING (auth.uid() = user_id);
-   
-   CREATE POLICY "Users can delete own todos" ON todos
-     FOR DELETE USING (auth.uid() = user_id);
-   ```
+### Modern UX:
+- ✅ Smooth animations
+- ✅ Focus states
+- ✅ Loading indicators
+- ✅ Error handling
+- ✅ Success messages
 
+### Accessibility:
+- ✅ Proper labels
+- ✅ Required fields marked
+- ✅ Keyboard navigation
+- ✅ High contrast text
+
+---
+
+## 📊 Recent Changes
+
+### Design Updates:
+- Changed "TODO" → "TODO." (with period)
+- Reduced font weight from 700 → 600 (less bold)
+- Changed purple accents → black
+- Updated button colors to black
+- Modified input focus states to black
+- Adjusted badge and accent colors
+
+### Functionality Updates:
+- Added name field to signup form
+- Name stored in Supabase user metadata
+- Ready for future team features
+- Improved validation
+
+---
+
+## 🔜 Next Steps
+
+1. **Create Todo Database Table**
 2. **Build Todo CRUD Operations**
-3. **Add Real-time Updates**
-4. **Create Better UI for Todo Management**
-5. **Add User Profile Page**
+3. **Add User Profile Page**
+4. **Implement Team Features** (using saved names)
+5. **Add Real-time Collaboration**
 
 ---
 
-## 📚 Tech Stack Used
+## 📚 Tech Stack
 
-- **React** - UI Framework
-- **TypeScript** - Type Safety
-- **React Router** - Page Navigation
-- **Supabase Auth** - Authentication Backend
-- **Vite** - Build Tool
+- **Frontend:** React 18 + TypeScript + Vite
+- **Routing:** React Router DOM
+- **Authentication:** Supabase Auth
+- **Database:** Supabase (PostgreSQL)
+- **Styling:** CSS with Glassmorphism
+- **State Management:** React Context API
 
 ---
 
 ## ✅ Summary
 
-You now have:
-- ✅ Complete authentication system
-- ✅ Login and signup pages
+Current authentication system includes:
+- ✅ "TODO." branding
+- ✅ Clean black & white design with light gradient background
+- ✅ Login page (email/password)
+- ✅ Signup page (name/email/password/confirm)
+- ✅ Name field for future teams
 - ✅ Protected routes
 - ✅ User session management
-- ✅ Beautiful UI
-- ✅ Secure credential storage in Supabase
+- ✅ Glassmorphism design
+- ✅ Smooth user experience
+- ✅ Error handling
+- ✅ Supabase integration
 
-**All user credentials are securely stored in Supabase's database with proper encryption!**
-
----
-
-## 🚀 Ready to Test!
-
-1. Update `.env` with your Supabase credentials
-2. Run `npm run dev`
-3. Visit http://localhost:5173
-4. Create an account and sign in!
-
+**Everything is working and ready for the next features!** 🚀

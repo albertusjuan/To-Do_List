@@ -1,13 +1,32 @@
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .home-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  position: relative;
+  overflow-x: hidden;
 }
 
 .navbar {
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   padding: 1rem 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  animation: fadeInUp 0.6s ease-out;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .nav-content {
@@ -19,78 +38,111 @@
 }
 
 .nav-content h2 {
-  color: #333;
+  color: #1e293b;
   margin: 0;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  font-size: 1.5rem;
 }
 
 .nav-actions {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 1.5rem;
 }
 
 .user-email {
-  color: #666;
-  font-size: 0.9rem;
+  color: #475569;
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .signout-button {
-  padding: 0.5rem 1.5rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  padding: 0.5rem 1.25rem;
+  background: #000000;
+  color: #ffffff;
   border: none;
   border-radius: 8px;
   font-weight: 600;
+  font-size: 0.875rem;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  letter-spacing: 0.3px;
 }
 
 .signout-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+  background: #1a1a1a;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .main-content {
-  max-width: 800px;
+  max-width: 900px;
   margin: 0 auto;
   padding: 3rem 2rem;
+  animation: fadeInUp 0.8s ease-out 0.2s both;
 }
 
 .welcome-section {
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 20px;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 16px;
   padding: 3rem;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: 
+    0 0 0 1px rgba(0, 0, 0, 0.03),
+    0 20px 40px rgba(0, 0, 0, 0.08);
+  position: relative;
+  overflow: hidden;
 }
 
 .welcome-section h1 {
-  color: #333;
+  color: #1e293b;
   margin-bottom: 1rem;
   font-size: 2.5rem;
+  font-weight: 700;
+  letter-spacing: -1px;
+  position: relative;
+  z-index: 1;
 }
 
 .welcome-section > p {
-  color: #666;
+  color: #475569;
   font-size: 1.1rem;
   margin-bottom: 2rem;
+  position: relative;
+  z-index: 1;
+}
+
+.welcome-section > p strong {
+  color: #1e293b;
+  font-weight: 600;
 }
 
 .info-card {
-  background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+  background: rgba(0, 0, 0, 0.03);
+  backdrop-filter: blur(10px);
   padding: 2rem;
-  border-radius: 15px;
+  border-radius: 12px;
   margin: 2rem 0;
-  border: 2px solid #667eea30;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  position: relative;
+  z-index: 1;
 }
 
 .info-card h3 {
-  color: #333;
+  color: #1e293b;
   margin-bottom: 1rem;
+  font-weight: 600;
 }
 
 .info-card p {
-  color: #666;
+  color: #475569;
   margin-bottom: 1rem;
 }
 
@@ -100,43 +152,62 @@
 }
 
 .info-card li {
-  padding: 0.5rem 0;
-  color: #555;
+  padding: 0.75rem 0;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.info-card li:last-child {
+  border-bottom: none;
 }
 
 .info-card code {
-  background: rgba(102, 126, 234, 0.1);
-  padding: 0.2rem 0.5rem;
-  border-radius: 5px;
-  font-family: 'Courier New', monospace;
-  font-size: 0.9rem;
+  background: rgba(0, 0, 0, 0.05);
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+  font-size: 0.875rem;
+  color: #000000;
+  border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .badge {
-  background: #4ade80;
-  color: white;
-  padding: 0.2rem 0.8rem;
-  border-radius: 20px;
+  background: #000000;
+  color: #ffffff;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
   font-size: 0.85rem;
   font-weight: 600;
+  letter-spacing: 0.3px;
 }
 
 .next-steps {
   margin-top: 2rem;
+  position: relative;
+  z-index: 1;
 }
 
 .next-steps h3 {
-  color: #333;
-  margin-bottom: 1rem;
+  color: #1e293b;
+  margin-bottom: 1.25rem;
+  font-weight: 600;
 }
 
 .next-steps ol {
-  color: #555;
+  color: #334155;
   padding-left: 1.5rem;
 }
 
 .next-steps li {
-  padding: 0.5rem 0;
+  padding: 0.75rem 0;
   font-size: 1.05rem;
+  line-height: 1.6;
 }
 
+.next-steps li::marker {
+  color: #000000;
+  font-weight: 700;
+}

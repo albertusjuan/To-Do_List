@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import './Auth.css';
 
 export function Signup() {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -17,6 +18,10 @@ export function Signup() {
     e.preventDefault();
     setError('');
 
+    if (!name.trim()) {
+      return setError('Name is required');
+    }
+
     if (password !== confirmPassword) {
       return setError('Passwords do not match');
     }
@@ -27,7 +32,7 @@ export function Signup() {
 
     setLoading(true);
 
-    const { error } = await signUp(email, password);
+    const { error } = await signUp(email, password, name);
 
     if (error) {
       setError(error.message);
@@ -54,12 +59,24 @@ export function Signup() {
   return (
     <div className="auth-container">
       <div className="auth-card">
-        <h1>Create Account</h1>
-        <p className="auth-subtitle">Sign up for a new account</p>
+        <h1>TODO.</h1>
+        <p className="auth-subtitle">Create your account</p>
 
         {error && <div className="error-message">{error}</div>}
 
         <form onSubmit={handleSubmit} className="auth-form">
+          <div className="form-group">
+            <label htmlFor="name">Name</label>
+            <input
+              id="name"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Your name"
+              required
+            />
+          </div>
+
           <div className="form-group">
             <label htmlFor="email">Email</label>
             <input
