@@ -2,6 +2,7 @@ import express, { Express, Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
+import todosRouter from './routes/todos';
 
 // Load environment variables from root .env file
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
@@ -21,17 +22,20 @@ app.use(express.urlencoded({ extended: true }));
 app.get('/api/health', (req: Request, res: Response) => {
   res.json({ 
     status: 'OK', 
-    message: 'Sleekflow To-Do API is running',
+    message: 'TODO. API is running',
     timestamp: new Date().toISOString()
   });
 });
 
 app.get('/api', (req: Request, res: Response) => {
   res.json({ 
-    message: 'Sleekflow To-Do List API',
+    message: 'TODO. API',
     version: '1.0.0'
   });
 });
+
+// TODO routes
+app.use('/api/todos', todosRouter);
 
 // Start server
 app.listen(PORT, () => {

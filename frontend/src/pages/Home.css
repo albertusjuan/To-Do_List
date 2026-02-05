@@ -81,9 +81,9 @@
 }
 
 .main-content {
-  max-width: 900px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 3rem 2rem;
+  padding: 1.5rem 2rem;
   animation: fadeInUp 0.8s ease-out 0.2s both;
 }
 
@@ -93,7 +93,7 @@
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.8);
   border-radius: 16px;
-  padding: 3rem;
+  padding: 2rem;
   box-shadow: 
     0 0 0 1px rgba(0, 0, 0, 0.03),
     0 20px 40px rgba(0, 0, 0, 0.08);
@@ -127,9 +127,9 @@
 .info-card {
   background: rgba(0, 0, 0, 0.03);
   backdrop-filter: blur(10px);
-  padding: 2rem;
+  padding: 1.5rem;
   border-radius: 12px;
-  margin: 2rem 0;
+  margin: 1.5rem 0;
   border: 1px solid rgba(0, 0, 0, 0.08);
   position: relative;
   z-index: 1;
@@ -185,7 +185,7 @@
 }
 
 .next-steps {
-  margin-top: 2rem;
+  margin-top: 1.5rem;
   position: relative;
   z-index: 1;
 }
