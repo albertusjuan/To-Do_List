@@ -1,4 +1,5 @@
 import { useState, FormEvent, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Todo, TodoStatus, CreateTodoInput } from '../types/database.types';
 import './TodoForm.css';
 
@@ -65,7 +66,7 @@ export function TodoForm({ todo, onClose }: TodoFormProps) {
     }
   };
 
-  return (
+  const modalContent = (
     <div className="todo-form-overlay">
       <div className="todo-form-modal">
         <div className="todo-form-header">
@@ -147,4 +148,6 @@ export function TodoForm({ todo, onClose }: TodoFormProps) {
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 }
