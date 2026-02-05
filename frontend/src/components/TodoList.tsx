@@ -2,13 +2,16 @@ import { useState, useEffect } from 'react';
 import { Todo, TodoStatus } from '../types/database.types';
 import { TodoItem } from './TodoItem';
 import { TodoForm } from './TodoForm';
+import { Calendar } from './calendar/Calendar';
+import { ViewMode } from '../pages/Main';
 import './TodoList.css';
 
 interface TodoListProps {
   userId?: string;
+  mode: ViewMode;
 }
 
-export function TodoList({ userId }: TodoListProps) {
+export function TodoList({ userId, mode }: TodoListProps) {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -16,10 +19,11 @@ export function TodoList({ userId }: TodoListProps) {
   const [filterStatus, setFilterStatus] = useState<TodoStatus | 'ALL'>('ALL');
   const [sortBy, setSortBy] = useState<'due_date' | 'status' | 'name'>('due_date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
 
   useEffect(() => {
     fetchTodos();
-  }, [filterStatus, sortBy, sortOrder]);
+  }, [filterStatus, sortBy, sortOrder, mode]);
 
   const fetchTodos = async () => {
     try {
@@ -34,7 +38,15 @@ export function TodoList({ userId }: TodoListProps) {
       const result = await response.json();
       
       if (result.success) {
-        setTodos(result.data);
+        // Filter based on mode: Personal (team_id is null) or Team (team_id is not null)
+        const filteredTodos = result.data.filter((todo: Todo) => {
+          if (mode === 'personal') {
+            return todo.team_id === null;
+          } else {
+            return todo.team_id !== null;
+          }
+        });
+        setTodos(filteredTodos);
       }
     } catch (error) {
       console.error('Error fetching todos:', error);
@@ -85,7 +97,20 @@ export function TodoList({ userId }: TodoListProps) {
   return (
     <div className="todo-list-container">
       <div className="todo-header">
-        <h2>My TODOs</h2>
+        <div className="view-toggle">
+          <button 
+            className={`toggle-btn ${viewMode === 'list' ? 'active' : ''}`}
+            onClick={() => setViewMode('list')}
+          >
+            List
+          </button>
+          <button 
+            className={`toggle-btn ${viewMode === 'calendar' ? 'active' : ''}`}
+            onClick={() => setViewMode('calendar')}
+          >
+            Calendar
+          </button>
+        </div>
         <button onClick={handleCreate} className="btn-create">
           + New TODO
         </button>
@@ -126,22 +151,30 @@ export function TodoList({ userId }: TodoListProps) {
         </div>
       </div>
 
-      <div className="todo-list">
-        {todos.length === 0 ? (
-          <div className="todo-empty">
-            <p>No TODOs found. Create your first one!</p>
-          </div>
-        ) : (
-          todos.map(todo => (
-            <TodoItem
-              key={todo.id}
-              todo={todo}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-            />
-          ))
-        )}
-      </div>
+      {viewMode === 'list' ? (
+        <div className="todo-list">
+          {todos.length === 0 ? (
+            <div className="todo-empty">
+              <p>No TODOs found. Create your first one!</p>
+            </div>
+          ) : (
+            todos.map(todo => (
+              <TodoItem
+                key={todo.id}
+                todo={todo}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+              />
+            ))
+          )}
+        </div>
+      ) : (
+        <Calendar
+          todos={todos}
+          onEditTodo={handleEdit}
+          onDeleteTodo={handleDelete}
+        />
+      )}
 
       {showForm && (
         <TodoForm
