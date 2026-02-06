@@ -400,3 +400,90 @@
   color: #000000;
   font-weight: 700;
 }
+
+/* Mode Toggle Button Styles */
+.mode-toggle-container {
+  position: relative;
+  display: inline-block;
+}
+
+.mode-toggle-bg {
+  position: relative;
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  padding: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.main-container.team-mode .mode-toggle-bg {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.mode-toggle-slider {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  height: calc(100% - 8px);
+  width: calc(50% - 4px);
+  background: #ffffff;
+  border-radius: 10px;
+  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 1;
+}
+
+.main-container.team-mode .mode-toggle-slider {
+  background: #1e293b;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.mode-toggle-slider.slide-right {
+  transform: translateX(calc(100% + 4px));
+}
+
+.mode-toggle-slider.slide-left {
+  transform: translateX(0);
+}
+
+.mode-toggle-buttons {
+  position: relative;
+  display: flex;
+  z-index: 2;
+}
+
+.mode-toggle-btn {
+  background: transparent;
+  border: none;
+  padding: 0.625rem 1.5rem;
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  color: #64748b;
+  white-space: nowrap;
+  position: relative;
+  z-index: 2;
+}
+
+.mode-toggle-btn.active {
+  color: #1e293b;
+}
+
+.main-container.team-mode .mode-toggle-btn {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.main-container.team-mode .mode-toggle-btn.active {
+  color: #ffffff;
+}
+
+.mode-toggle-btn:hover:not(.active) {
+  color: #475569;
+}
+
+.main-container.team-mode .mode-toggle-btn:hover:not(.active) {
+  color: rgba(255, 255, 255, 0.7);
+}
