@@ -47,25 +47,16 @@ export function Main() {
       <nav className="navbar">
         <div className="nav-content">
           <div className="nav-logo">
-            <div className="mode-toggle-container">
-              <div className="mode-toggle-bg">
-                <div className={`mode-toggle-slider ${mode === 'team' ? 'slide-right' : 'slide-left'}`}></div>
+            <button 
+              className={`mode-toggle-btn ${mode === 'team' ? 'team-active' : 'personal-active'}`}
+              onClick={() => setMode(mode === 'personal' ? 'team' : 'personal')}
+            >
+              <div className="mode-circle"></div>
+              <div className="mode-text-container">
+                <span className={`mode-text ${mode === 'personal' ? 'show' : 'hide'}`}>TODO.</span>
+                <span className={`mode-text team-text ${mode === 'team' ? 'show' : 'hide'}`}>TeamDO.</span>
               </div>
-              <div className="mode-toggle-buttons">
-                <button 
-                  className={`mode-toggle-btn ${mode === 'personal' ? 'active' : ''}`}
-                  onClick={() => setMode('personal')}
-                >
-                  TODO.
-                </button>
-                <button 
-                  className={`mode-toggle-btn ${mode === 'team' ? 'active' : ''}`}
-                  onClick={() => setMode('team')}
-                >
-                  TeamDO.
-                </button>
-              </div>
-            </div>
+            </button>
           </div>
           
           <div className="nav-datetime">

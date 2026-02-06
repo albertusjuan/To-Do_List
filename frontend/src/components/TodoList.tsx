@@ -20,6 +20,7 @@ export function TodoList({ userId, mode }: TodoListProps) {
   const [sortBy, setSortBy] = useState<'due_date' | 'status' | 'name'>('due_date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
+  const [defaultDate, setDefaultDate] = useState<Date | null>(null);
 
   useEffect(() => {
     fetchTodos();
@@ -57,11 +58,19 @@ export function TodoList({ userId, mode }: TodoListProps) {
 
   const handleCreate = () => {
     setEditingTodo(null);
+    setDefaultDate(null);
+    setShowForm(true);
+  };
+
+  const handleCreateWithDate = (date: Date) => {
+    setEditingTodo(null);
+    setDefaultDate(date);
     setShowForm(true);
   };
 
   const handleEdit = (todo: Todo) => {
     setEditingTodo(todo);
+    setDefaultDate(null);
     setShowForm(true);
   };
 
@@ -85,7 +94,52 @@ export function TodoList({ userId, mode }: TodoListProps) {
   const handleFormClose = (refresh?: boolean) => {
     setShowForm(false);
     setEditingTodo(null);
+    setDefaultDate(null);
     if (refresh) {
+      fetchTodos();
+    }
+  };
+
+  const handleQuickUpdate = async (id: string, updates: Partial<Todo>) => {
+    try {
+        // Optimistic update - update UI immediately
+      setTodos(prevTodos => 
+        prevTodos.map(todo => 
+          todo.id === id ? { ...todo, ...updates } : todo
+        )
+      );
+
+      // Find the current todo to merge with updates for API call
+      const currentTodo = todos.find(t => t.id === id);
+      if (!currentTodo) return;
+
+      // Merge current todo with updates
+      const updatedTodo = {
+        name: currentTodo.name,
+        description: currentTodo.description,
+        due_date: currentTodo.due_date,
+        status: currentTodo.status,
+        ...updates
+      };
+
+      // Send update to server in background
+      const response = await fetch(`/api/todos/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedTodo),
+      });
+
+      const result = await response.json();
+
+      // If server update fails, revert the change
+      if (!result.success) {
+        fetchTodos();
+      }
+    } catch (error) {
+      console.error('Error updating todo:', error);
+      // Revert on error
       fetchTodos();
     }
   };
@@ -111,45 +165,49 @@ export function TodoList({ userId, mode }: TodoListProps) {
             Calendar
           </button>
         </div>
-        <button onClick={handleCreate} className="btn-create">
-          + New TODO
-        </button>
-      </div>
-
-      <div className="todo-controls">
-        <div className="filter-group">
-          <label>Filter by Status:</label>
-          <select 
-            value={filterStatus} 
-            onChange={(e) => setFilterStatus(e.target.value as TodoStatus | 'ALL')}
-            className="filter-select"
-          >
-            <option value="ALL">All</option>
-            <option value="NOT_STARTED">Not Started</option>
-            <option value="IN_PROGRESS">In Progress</option>
-            <option value="COMPLETED">Completed</option>
-          </select>
-        </div>
-
-        <div className="sort-group">
-          <label>Sort by:</label>
-          <select 
-            value={sortBy} 
-            onChange={(e) => setSortBy(e.target.value as 'due_date' | 'status' | 'name')}
-            className="sort-select"
-          >
-            <option value="due_date">Due Date</option>
-            <option value="status">Status</option>
-            <option value="name">Name</option>
-          </select>
-          <button 
-            onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-            className="btn-sort-order"
-          >
-            {sortOrder === 'asc' ? '↑' : '↓'}
+        {viewMode === 'list' && (
+          <button onClick={handleCreate} className="btn-create">
+            + New TODO
           </button>
-        </div>
+        )}
       </div>
+
+      {viewMode === 'list' && (
+        <div className="todo-controls">
+          <div className="filter-group">
+            <label>Filter by Status:</label>
+            <select 
+              value={filterStatus} 
+              onChange={(e) => setFilterStatus(e.target.value as TodoStatus | 'ALL')}
+              className="filter-select"
+            >
+              <option value="ALL">All</option>
+              <option value="NOT_STARTED">Not Started</option>
+              <option value="IN_PROGRESS">In Progress</option>
+              <option value="COMPLETED">Completed</option>
+            </select>
+          </div>
+
+          <div className="sort-group">
+            <label>Sort by:</label>
+            <select 
+              value={sortBy} 
+              onChange={(e) => setSortBy(e.target.value as 'due_date' | 'status' | 'name')}
+              className="sort-select"
+            >
+              <option value="due_date">Due Date</option>
+              <option value="status">Status</option>
+              <option value="name">Name</option>
+            </select>
+            <button 
+              onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+              className="btn-sort-order"
+            >
+              {sortOrder === 'asc' ? '↑' : '↓'}
+            </button>
+          </div>
+        </div>
+      )}
 
       {viewMode === 'list' ? (
         <div className="todo-list">
@@ -164,6 +222,7 @@ export function TodoList({ userId, mode }: TodoListProps) {
                 todo={todo}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
+                onQuickUpdate={handleQuickUpdate}
               />
             ))
           )}
@@ -173,12 +232,14 @@ export function TodoList({ userId, mode }: TodoListProps) {
           todos={todos}
           onEditTodo={handleEdit}
           onDeleteTodo={handleDelete}
+          onCreateTodo={handleCreateWithDate}
         />
       )}
 
       {showForm && (
         <TodoForm
           todo={editingTodo}
+          defaultDate={defaultDate}
           onClose={handleFormClose}
         />
       )}

@@ -1,13 +1,16 @@
-import { Todo } from '../types/database.types';
+import { useState } from 'react';
+import { Todo, TodoStatus } from '../types/database.types';
 import './TodoItem.css';
 
 interface TodoItemProps {
   todo: Todo;
   onEdit: (todo: Todo) => void;
   onDelete: (id: string) => void;
+  onQuickUpdate?: (id: string, updates: Partial<Todo>) => void;
 }
 
-export function TodoItem({ todo, onEdit, onDelete }: TodoItemProps) {
+export function TodoItem({ todo, onEdit, onDelete, onQuickUpdate }: TodoItemProps) {
+  const [isUpdating, setIsUpdating] = useState(false);
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'NOT_STARTED':
@@ -48,26 +51,68 @@ export function TodoItem({ todo, onEdit, onDelete }: TodoItemProps) {
     return new Date(todo.due_date) < new Date();
   };
 
+  const handleStatusChange = async (newStatus: TodoStatus) => {
+    if (!onQuickUpdate) return;
+    setIsUpdating(true);
+    await onQuickUpdate(todo.id, { status: newStatus });
+    setIsUpdating(false);
+  };
+
+  const handleDateChange = async (newDate: string) => {
+    if (!onQuickUpdate || !newDate) return;
+    setIsUpdating(true);
+    await onQuickUpdate(todo.id, { due_date: new Date(newDate).toISOString() });
+    setIsUpdating(false);
+  };
+
+  const getContainerClass = () => {
+    const baseClass = 'todo-item';
+    const statusClass = `status-${todo.status.toLowerCase()}`;
+    const overdueClass = isOverdue() ? 'overdue' : '';
+    return `${baseClass} ${statusClass} ${overdueClass}`.trim();
+  };
+
   return (
-    <div className={`todo-item ${isOverdue() ? 'overdue' : ''}`}>
+    <div className={getContainerClass()}>
       <div className="todo-content">
         <div className="todo-header-row">
           <h3 className="todo-name">{todo.name}</h3>
-          <span 
-            className="todo-status-badge"
-            style={{ backgroundColor: getStatusColor(todo.status) }}
-          >
-            {getStatusLabel(todo.status)}
-          </span>
         </div>
         
         <p className="todo-description">{todo.description}</p>
         
-        <div className="todo-meta">
-          <span className="todo-due-date">
-            📅 Due: {formatDate(todo.due_date)}
-            {isOverdue() && <span className="overdue-label"> (Overdue)</span>}
-          </span>
+        <div className="todo-quick-actions">
+          <div className="quick-action-group">
+            <label>Status</label>
+            <select 
+              value={todo.status}
+              onChange={(e) => handleStatusChange(e.target.value as TodoStatus)}
+              className="status-select"
+              disabled={isUpdating}
+            >
+              <option value="NOT_STARTED">Not Started</option>
+              <option value="IN_PROGRESS">In Progress</option>
+              <option value="COMPLETED">Completed</option>
+            </select>
+          </div>
+          
+          <div className="quick-action-group">
+            <label>Due Date</label>
+            <input 
+              type="date"
+              value={new Date(todo.due_date).toISOString().split('T')[0]}
+              onChange={(e) => handleDateChange(e.target.value)}
+              className="date-input"
+              disabled={isUpdating}
+            />
+          </div>
+          
+          {isOverdue() && (
+            <div className="overdue-badge">
+              <span className="overdue-dot"></span>
+              <span>Overdue</span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -75,12 +120,14 @@ export function TodoItem({ todo, onEdit, onDelete }: TodoItemProps) {
         <button 
           onClick={() => onEdit(todo)}
           className="btn-edit"
+          title="Edit"
         >
           Edit
         </button>
         <button 
           onClick={() => onDelete(todo.id)}
           className="btn-delete"
+          title="Delete"
         >
           Delete
         </button>

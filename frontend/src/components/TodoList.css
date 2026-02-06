@@ -121,20 +121,46 @@
 
 .filter-select,
 .sort-select {
-  padding: 0.5rem 0.75rem;
-  border: 2px solid #e5e5e5;
+  padding: 0.625rem 2.5rem 0.625rem 1rem;
+  border: 1.5px solid #e2e8f0;
   border-radius: 8px;
   background: #ffffff;
-  font-size: 0.875rem;
+  font-size: 0.95rem;
+  font-weight: 500;
   color: #1e293b;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='%2364748b' d='M4.427 6.427l3.396 3.396a.25.25 0 00.354 0l3.396-3.396A.25.25 0 0011.396 6H4.604a.25.25 0 00-.177.427z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.875rem center;
+  background-size: 16px;
+}
+
+.filter-select:hover,
+.sort-select:hover {
+  border-color: #94a3b8;
+  background-color: #f8fafc;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
 .filter-select:focus,
 .sort-select:focus {
   outline: none;
-  border-color: #000000;
+  border-color: #3b82f6;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.filter-select option,
+.sort-select option {
+  padding: 0.5rem;
+  background: #ffffff;
+  color: #1e293b;
+  font-weight: 500;
 }
 
 .main-container.team-mode .filter-select,
@@ -142,12 +168,30 @@
   background: rgba(255, 255, 255, 0.1);
   border-color: rgba(255, 255, 255, 0.2);
   color: #ffffff;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='%23ffffff' d='M4.427 6.427l3.396 3.396a.25.25 0 00.354 0l3.396-3.396A.25.25 0 0011.396 6H4.604a.25.25 0 00-.177.427z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.875rem center;
+  background-size: 16px;
+}
+
+.main-container.team-mode .filter-select:hover,
+.main-container.team-mode .sort-select:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
 .main-container.team-mode .filter-select:focus,
 .main-container.team-mode .sort-select:focus {
   border-color: rgba(255, 255, 255, 0.4);
-  background: rgba(255, 255, 255, 0.15);
+  background-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+}
+
+.main-container.team-mode .filter-select option,
+.main-container.team-mode .sort-select option {
+  background: #1e293b;
+  color: #ffffff;
 }
 
 .btn-sort-order {

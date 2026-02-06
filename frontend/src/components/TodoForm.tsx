@@ -5,10 +5,11 @@ import './TodoForm.css';
 
 interface TodoFormProps {
   todo: Todo | null;
+  defaultDate?: Date | null;
   onClose: (refresh?: boolean) => void;
 }
 
-export function TodoForm({ todo, onClose }: TodoFormProps) {
+export function TodoForm({ todo, defaultDate, onClose }: TodoFormProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [dueDate, setDueDate] = useState('');
@@ -25,8 +26,12 @@ export function TodoForm({ todo, onClose }: TodoFormProps) {
       const formatted = date.toISOString().slice(0, 16);
       setDueDate(formatted);
       setStatus(todo.status);
+    } else if (defaultDate) {
+      // Set default date for new todo in calendar mode
+      const formatted = defaultDate.toISOString().slice(0, 16);
+      setDueDate(formatted);
     }
-  }, [todo]);
+  }, [todo, defaultDate]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();

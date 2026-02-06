@@ -7,9 +7,10 @@ interface CalendarProps {
   onDateClick?: (date: Date) => void;
   onEditTodo: (todo: Todo) => void;
   onDeleteTodo: (id: string) => void;
+  onCreateTodo?: (date: Date) => void;
 }
 
-export function Calendar({ todos, onDateClick, onEditTodo, onDeleteTodo }: CalendarProps) {
+export function Calendar({ todos, onDateClick, onEditTodo, onDeleteTodo, onCreateTodo }: CalendarProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
 
@@ -131,40 +132,51 @@ export function Calendar({ todos, onDateClick, onEditTodo, onDeleteTodo }: Calen
             })}
           </h4>
           
-          {selectedDayTodos.length === 0 ? (
-            <p className="no-todos">No TODOs for this date</p>
-          ) : (
-            <div className="sidebar-todos">
-              {selectedDayTodos.map(todo => (
-                <div key={todo.id} className="sidebar-todo-item">
-                  <div className="sidebar-todo-header">
-                    <h5>{todo.name}</h5>
-                    <span 
-                      className="sidebar-status-badge"
-                      style={{ backgroundColor: getStatusColor(todo.status) }}
-                    >
-                      {todo.status.replace('_', ' ')}
-                    </span>
+          <div className="sidebar-content">
+            {selectedDayTodos.length === 0 ? (
+              <p className="no-todos">No TODOs for this date</p>
+            ) : (
+              <div className="sidebar-todos">
+                {selectedDayTodos.map(todo => (
+                  <div key={todo.id} className="sidebar-todo-item">
+                    <div className="sidebar-todo-header">
+                      <h5>{todo.name}</h5>
+                      <span 
+                        className="sidebar-status-badge"
+                        style={{ backgroundColor: getStatusColor(todo.status) }}
+                      >
+                        {todo.status.replace('_', ' ')}
+                      </span>
+                    </div>
+                    <p className="sidebar-todo-desc">{todo.description}</p>
+                    <div className="sidebar-todo-actions">
+                      <button 
+                        onClick={() => onEditTodo(todo)}
+                        className="sidebar-btn-edit"
+                      >
+                        Edit
+                      </button>
+                      <button 
+                        onClick={() => onDeleteTodo(todo.id)}
+                        className="sidebar-btn-delete"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
-                  <p className="sidebar-todo-desc">{todo.description}</p>
-                  <div className="sidebar-todo-actions">
-                    <button 
-                      onClick={() => onEditTodo(todo)}
-                      className="sidebar-btn-edit"
-                    >
-                      Edit
-                    </button>
-                    <button 
-                      onClick={() => onDeleteTodo(todo.id)}
-                      className="sidebar-btn-delete"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
+            
+            {onCreateTodo && (
+              <button 
+                onClick={() => onCreateTodo(selectedDate)}
+                className="sidebar-btn-create"
+              >
+                + New TODO
+              </button>
+            )}
+          </div>
         </div>
       )}
     </div>
