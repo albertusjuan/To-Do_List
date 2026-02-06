@@ -671,3 +671,4 @@ A: `teams` and `team_members` tables in Supabase (not yet used in UI).
 **End of Documentation**  
 **For questions, refer to the codebase or this guide.**
 
+
