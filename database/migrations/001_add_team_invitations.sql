@@ -100,9 +100,9 @@ CREATE POLICY "Team owners can create invitations"
   WITH CHECK (
     EXISTS (
       SELECT 1 FROM team_members
-      WHERE team_id = team_invitations.team_id
-        AND user_id = auth.uid()
-        AND role = 'owner'
+      WHERE team_members.team_id = team_invitations.team_id
+        AND team_members.user_id = auth.uid()
+        AND team_members.role::text = 'owner'
     )
   );
 
@@ -118,9 +118,9 @@ CREATE POLICY "Team owners can delete invitations"
   USING (
     EXISTS (
       SELECT 1 FROM team_members
-      WHERE team_id = team_invitations.team_id
-        AND user_id = auth.uid()
-        AND role = 'owner'
+      WHERE team_members.team_id = team_invitations.team_id
+        AND team_members.user_id = auth.uid()
+        AND team_members.role::text = 'owner'
     )
   );
 
