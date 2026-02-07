@@ -1,16 +1,31 @@
 import { Router, Request, Response } from 'express';
 import { supabase } from '../config/supabase';
+import { authMiddleware } from '../middleware/auth';
 
 const router = Router();
+
+// Apply authentication middleware to all routes
+router.use(authMiddleware);
 
 // Get all TODOs with optional filtering and sorting
 router.get('/', async (req: Request, res: Response) => {
   try {
     const { status, due_date_from, due_date_to, sort_by = 'created_at', sort_order = 'desc' } = req.query;
+    const userId = req.user?.id;
 
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        error: 'User not authenticated'
+      });
+    }
+
+    // IMPORTANT: Filter by user_id to ensure data isolation
+    // Even with RLS, we explicitly filter for security
     let query = supabase
       .from('todos')
-      .select('*');
+      .select('*')
+      .eq('user_id', userId); // CRITICAL: Only fetch user's own todos
 
     // Filter by status
     if (status) {
@@ -51,11 +66,21 @@ router.get('/', async (req: Request, res: Response) => {
 router.get('/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    const userId = req.user?.id;
 
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        error: 'User not authenticated'
+      });
+    }
+
+    // CRITICAL: Filter by user_id to prevent accessing other users' todos
     const { data, error } = await supabase
       .from('todos')
       .select('*')
       .eq('id', id)
+      .eq('user_id', userId) // Only allow access to own todos
       .single();
 
     if (error) throw error;
@@ -63,7 +88,7 @@ router.get('/:id', async (req: Request, res: Response) => {
     if (!data) {
       return res.status(404).json({
         success: false,
-        error: 'TODO not found'
+        error: 'TODO not found or access denied'
       });
     }
 
@@ -83,6 +108,14 @@ router.get('/:id', async (req: Request, res: Response) => {
 router.post('/', async (req: Request, res: Response) => {
   try {
     const { name, description, due_date, status = 'NOT_STARTED', team_id } = req.body;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        error: 'User not authenticated'
+      });
+    }
 
     // Validation
     if (!name || !description || !due_date) {
@@ -92,9 +125,11 @@ router.post('/', async (req: Request, res: Response) => {
       });
     }
 
+    // CRITICAL: Always set user_id to prevent creating todos for other users
     const { data, error } = await supabase
       .from('todos')
       .insert([{
+        user_id: userId, // CRITICAL: Set the authenticated user as owner
         name,
         description,
         due_date,
@@ -123,6 +158,14 @@ router.put('/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { name, description, due_date, status, team_id } = req.body;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        error: 'User not authenticated'
+      });
+    }
 
     const updateData: any = {};
     if (name !== undefined) updateData.name = name;
@@ -131,10 +174,12 @@ router.put('/:id', async (req: Request, res: Response) => {
     if (status !== undefined) updateData.status = status;
     if (team_id !== undefined) updateData.team_id = team_id;
 
+    // CRITICAL: Filter by user_id to prevent updating other users' todos
     const { data, error } = await supabase
       .from('todos')
       .update(updateData)
       .eq('id', id)
+      .eq('user_id', userId) // Only allow updating own todos
       .select()
       .single();
 
@@ -143,7 +188,7 @@ router.put('/:id', async (req: Request, res: Response) => {
     if (!data) {
       return res.status(404).json({
         success: false,
-        error: 'TODO not found'
+        error: 'TODO not found or access denied'
       });
     }
 
@@ -163,11 +208,21 @@ router.put('/:id', async (req: Request, res: Response) => {
 router.delete('/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    const userId = req.user?.id;
 
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        error: 'User not authenticated'
+      });
+    }
+
+    // CRITICAL: Filter by user_id to prevent deleting other users' todos
     const { error } = await supabase
       .from('todos')
       .delete()
-      .eq('id', id);
+      .eq('id', id)
+      .eq('user_id', userId); // Only allow deleting own todos
 
     if (error) throw error;
 

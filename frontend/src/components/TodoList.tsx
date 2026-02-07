@@ -3,6 +3,7 @@ import { Todo, TodoStatus } from '../types/database.types';
 import { TodoItem } from './TodoItem';
 import { TodoForm } from './TodoForm';
 import { Calendar } from './calendar/Calendar';
+import { TeamsView } from './TeamsView';
 import { ViewMode } from '../pages/Main';
 import './TodoList.css';
 
@@ -19,7 +20,7 @@ export function TodoList({ userId, mode }: TodoListProps) {
   const [filterStatus, setFilterStatus] = useState<TodoStatus | 'ALL'>('ALL');
   const [sortBy, setSortBy] = useState<'due_date' | 'status' | 'name'>('due_date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
+  const [viewMode, setViewMode] = useState<'list' | 'calendar' | 'teams'>('list');
   const [defaultDate, setDefaultDate] = useState<Date | null>(null);
 
   useEffect(() => {
@@ -39,7 +40,15 @@ export function TodoList({ userId, mode }: TodoListProps) {
       const result = await response.json();
       
       if (result.success) {
-        setTodos(result.data);
+        // Filter based on mode: Personal (team_id is null) or Team (team_id is not null)
+        const filteredTodos = result.data.filter((todo: Todo) => {
+          if (mode === 'personal') {
+            return todo.team_id === null;
+          } else {
+            return todo.team_id !== null;
+          }
+        });
+        setTodos(filteredTodos);
       }
     } catch (error) {
       console.error('Error fetching todos:', error);
@@ -156,6 +165,14 @@ export function TodoList({ userId, mode }: TodoListProps) {
           >
             Calendar
           </button>
+          {mode === 'team' && (
+            <button 
+              className={`toggle-btn ${viewMode === 'teams' ? 'active' : ''}`}
+              onClick={() => setViewMode('teams')}
+            >
+              Teams
+            </button>
+          )}
         </div>
         {viewMode === 'list' && (
           <button onClick={handleCreate} className="btn-create">
@@ -215,6 +232,7 @@ export function TodoList({ userId, mode }: TodoListProps) {
                 onEdit={handleEdit}
                 onDelete={handleDelete}
                 onQuickUpdate={handleQuickUpdate}
+                isTeamMode={mode === 'team'}
               />
             ))
           )}
@@ -230,10 +248,16 @@ export function TodoList({ userId, mode }: TodoListProps) {
         />
       )}
 
+      {viewMode === 'teams' && (
+        <TeamsView />
+      )}
+
       {showForm && (
         <TodoForm
           todo={editingTodo}
           defaultDate={defaultDate}
+          teamId={null}
+          isTeamMode={mode === 'team'}
           onClose={handleFormClose}
         />
       )}

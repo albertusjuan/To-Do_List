@@ -6,16 +6,26 @@ import './TodoForm.css';
 interface TodoFormProps {
   todo: Todo | null;
   defaultDate?: Date | null;
+  teamId?: string | null;
+  isTeamMode?: boolean;
   onClose: (refresh?: boolean) => void;
 }
 
-export function TodoForm({ todo, defaultDate, onClose }: TodoFormProps) {
+export function TodoForm({ todo, defaultDate, teamId, isTeamMode, onClose }: TodoFormProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [status, setStatus] = useState<TodoStatus>('NOT_STARTED');
+  const [selectedTeamId, setSelectedTeamId] = useState<string>(teamId || '');
+  const [teams, setTeams] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (isTeamMode) {
+      fetchTeams();
+    }
+  }, [isTeamMode]);
 
   useEffect(() => {
     if (todo) {
@@ -26,12 +36,25 @@ export function TodoForm({ todo, defaultDate, onClose }: TodoFormProps) {
       const formatted = date.toISOString().slice(0, 16);
       setDueDate(formatted);
       setStatus(todo.status);
+      setSelectedTeamId(todo.team_id || '');
     } else if (defaultDate) {
       // Set default date for new todo in calendar mode
       const formatted = defaultDate.toISOString().slice(0, 16);
       setDueDate(formatted);
     }
   }, [todo, defaultDate]);
+
+  const fetchTeams = async () => {
+    try {
+      const response = await fetch('/api/teams');
+      const result = await response.json();
+      if (result.success) {
+        setTeams(result.data);
+      }
+    } catch (error) {
+      console.error('Error fetching teams:', error);
+    }
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -44,6 +67,7 @@ export function TodoForm({ todo, defaultDate, onClose }: TodoFormProps) {
         description,
         due_date: new Date(dueDate).toISOString(),
         status,
+        team_id: isTeamMode && selectedTeamId ? selectedTeamId : null,
       };
 
       const url = todo ? `/api/todos/${todo.id}` : '/api/todos';
@@ -131,6 +155,29 @@ export function TodoForm({ todo, defaultDate, onClose }: TodoFormProps) {
               </select>
             </div>
           </div>
+
+          {isTeamMode && (
+            <div className="form-group">
+              <label htmlFor="team">Team (Optional)</label>
+              <select
+                id="team"
+                value={selectedTeamId}
+                onChange={(e) => setSelectedTeamId(e.target.value)}
+              >
+                <option value="">No Team</option>
+                {teams.map((team) => (
+                  <option key={team.id} value={team.id}>
+                    {team.name}
+                  </option>
+                ))}
+              </select>
+              {teams.length === 0 && (
+                <small className="form-hint">
+                  No teams available. <a href="/teams" target="_blank">Create a team first</a>
+                </small>
+              )}
+            </div>
+          )}
 
           <div className="form-actions">
             <button 

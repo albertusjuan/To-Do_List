@@ -7,9 +7,10 @@ interface TodoItemProps {
   onEdit: (todo: Todo) => void;
   onDelete: (id: string) => void;
   onQuickUpdate?: (id: string, updates: Partial<Todo>) => void;
+  isTeamMode?: boolean;
 }
 
-export function TodoItem({ todo, onEdit, onDelete, onQuickUpdate }: TodoItemProps) {
+export function TodoItem({ todo, onEdit, onDelete, onQuickUpdate, isTeamMode }: TodoItemProps) {
   const [isUpdating, setIsUpdating] = useState(false);
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -77,6 +78,7 @@ export function TodoItem({ todo, onEdit, onDelete, onQuickUpdate }: TodoItemProp
       <div className="todo-content">
         <div className="todo-header-row">
           <h3 className="todo-name">{todo.name}</h3>
+          {isTeamMode && <span className="team-badge">Team</span>}
         </div>
         
         <p className="todo-description">{todo.description}</p>
