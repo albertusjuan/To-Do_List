@@ -140,27 +140,20 @@ export function TeamsView() {
     }
 
     try {
-      const response = await fetch(`/api/teams/${teamId}/invite`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email: inviteEmail }),
-      });
-
-      const result = await response.json();
+      const result = await api.post(`/api/teams/${teamId}/invite`, { email: inviteEmail });
 
       if (result.success) {
+        alert(result.message || 'Member added successfully!');
         setInviteEmail('');
         setInvitingTeamId(null);
+        fetchTeamMembers(teamId);
         fetchTeamInvitations(teamId);
-        alert('Invitation sent successfully!');
       } else {
-        alert(result.message || 'Failed to send invitation');
+        alert(`Error: ${result.error}`);
       }
     } catch (error) {
       console.error('Error inviting member:', error);
-      alert('Failed to send invitation');
+      alert('Failed to invite member');
     }
   };
 

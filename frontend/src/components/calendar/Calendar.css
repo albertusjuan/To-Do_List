@@ -181,6 +181,40 @@
   color: #000000;
 }
 
+/* Status Counts */
+.todo-status-counts {
+  display: flex;
+  gap: 0.25rem;
+  margin-top: 0.25rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.status-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.15rem 0.35rem;
+  border-radius: 4px;
+  color: #ffffff;
+  line-height: 1;
+}
+
+.status-badge.not-started {
+  background: #94a3b8;
+}
+
+.status-badge.in-progress {
+  background: #3b82f6;
+}
+
+.status-badge.completed {
+  background: #10b981;
+}
+
+.calendar-day.selected .status-badge {
+  opacity: 0.9;
+}
+
 /* Sidebar */
 .calendar-sidebar {
   width: 350px;
