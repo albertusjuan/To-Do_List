@@ -5,6 +5,7 @@ import { TodoForm } from './TodoForm';
 import { Calendar } from './calendar/Calendar';
 import { TeamsView } from './TeamsView';
 import { ViewMode } from '../pages/Main';
+import { api } from '../utils/api';
 import './TodoList.css';
 
 interface TodoListProps {
@@ -36,10 +37,9 @@ export function TodoList({ userId, mode }: TodoListProps) {
         url += `&status=${filterStatus}`;
       }
 
-      const response = await fetch(url);
-      const result = await response.json();
+      const result = await api.get<Todo[]>(url);
       
-      if (result.success) {
+      if (result.success && result.data) {
         // Filter based on mode: Personal (team_id is null) or Team (team_id is not null)
         const filteredTodos = result.data.filter((todo: Todo) => {
           if (mode === 'personal') {
@@ -49,6 +49,9 @@ export function TodoList({ userId, mode }: TodoListProps) {
           }
         });
         setTodos(filteredTodos);
+      } else {
+        console.error('Error fetching todos:', result.error);
+        alert(`Failed to fetch todos: ${result.error}`);
       }
     } catch (error) {
       console.error('Error fetching todos:', error);
@@ -79,13 +82,12 @@ export function TodoList({ userId, mode }: TodoListProps) {
     if (!confirm('Are you sure you want to delete this TODO?')) return;
 
     try {
-      const response = await fetch(`/api/todos/${id}`, {
-        method: 'DELETE',
-      });
-      const result = await response.json();
+      const result = await api.delete(`/api/todos/${id}`);
 
       if (result.success) {
         fetchTodos();
+      } else {
+        alert(`Failed to delete todo: ${result.error}`);
       }
     } catch (error) {
       console.error('Error deleting todo:', error);
@@ -124,18 +126,11 @@ export function TodoList({ userId, mode }: TodoListProps) {
       };
 
       // Send update to server in background
-      const response = await fetch(`/api/todos/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updatedTodo),
-      });
-
-      const result = await response.json();
+      const result = await api.put(`/api/todos/${id}`, updatedTodo);
 
       // If server update fails, revert the change
       if (!result.success) {
+        console.error('Error updating todo:', result.error);
         fetchTodos();
       }
     } catch (error) {

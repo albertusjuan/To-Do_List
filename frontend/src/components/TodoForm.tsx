@@ -1,6 +1,7 @@
 import { useState, FormEvent, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Todo, TodoStatus, CreateTodoInput } from '../types/database.types';
+import { api } from '../utils/api';
 import './TodoForm.css';
 
 interface TodoFormProps {
@@ -46,9 +47,8 @@ export function TodoForm({ todo, defaultDate, teamId, isTeamMode, onClose }: Tod
 
   const fetchTeams = async () => {
     try {
-      const response = await fetch('/api/teams');
-      const result = await response.json();
-      if (result.success) {
+      const result = await api.get('/api/teams');
+      if (result.success && result.data) {
         setTeams(result.data);
       }
     } catch (error) {
@@ -71,17 +71,9 @@ export function TodoForm({ todo, defaultDate, teamId, isTeamMode, onClose }: Tod
       };
 
       const url = todo ? `/api/todos/${todo.id}` : '/api/todos';
-      const method = todo ? 'PUT' : 'POST';
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(todoData),
-      });
-
-      const result = await response.json();
+      const result = todo
+        ? await api.put(url, todoData)
+        : await api.post(url, todoData);
 
       if (result.success) {
         onClose(true);
