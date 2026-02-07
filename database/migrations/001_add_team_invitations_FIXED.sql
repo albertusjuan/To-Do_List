@@ -1,7 +1,11 @@
--- Migration: Add team member invitations and max_members (SAFE VERSION)
+-- Migration: Add team member invitations and max_members (FIXED VERSION)
 -- Date: 2026-02-07
 -- Description: Adds team member invitation system with max member limits
--- NOTE: This version checks for table existence and handles missing tables
+-- FIX: Enables UUID extension and handles all type issues
+
+-- CRITICAL: Enable UUID extension first
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "pgcrypto"; -- For gen_random_uuid()
 
 -- STEP 1: Create teams table if it doesn't exist
 CREATE TABLE IF NOT EXISTS teams (
@@ -39,7 +43,7 @@ CREATE TABLE IF NOT EXISTS team_members (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   team_id UUID NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  role TEXT NOT NULL DEFAULT 'member',
+  role TEXT NOT NULL DEFAULT 'member' CHECK (role IN ('owner', 'member')),
   joined_at TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE(team_id, user_id)
 );
@@ -55,7 +59,7 @@ BEGIN
   END IF;
 END $$;
 
--- Add index on email for faster lookups
+-- Add indexes for faster lookups
 CREATE INDEX IF NOT EXISTS idx_team_members_email ON team_members(email);
 CREATE INDEX IF NOT EXISTS idx_team_members_team_id ON team_members(team_id);
 CREATE INDEX IF NOT EXISTS idx_team_members_user_id ON team_members(user_id);
@@ -84,17 +88,19 @@ DECLARE
   current_member_count INTEGER;
   max_allowed INTEGER;
 BEGIN
-  -- Get current member count and max allowed
-  SELECT COUNT(*), t.max_members
-  INTO current_member_count, max_allowed
-  FROM team_members tm
-  JOIN teams t ON t.id = NEW.team_id
-  WHERE tm.team_id = NEW.team_id
-  GROUP BY t.max_members;
+  -- Get max allowed for this team
+  SELECT max_members INTO max_allowed
+  FROM teams
+  WHERE id = NEW.team_id;
 
-  -- If first member, allow
+  -- Get current member count for this team
+  SELECT COUNT(*) INTO current_member_count
+  FROM team_members
+  WHERE team_id = NEW.team_id;
+
+  -- If current_member_count is NULL (no members yet), allow
   IF current_member_count IS NULL THEN
-    RETURN NEW;
+    current_member_count := 0;
   END IF;
 
   -- Check if adding this member would exceed the limit
@@ -124,18 +130,25 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- STEP 9: Row Level Security (RLS) policies for team_invitations
-
--- Enable RLS
+-- STEP 9: Enable RLS on all tables
+ALTER TABLE teams ENABLE ROW LEVEL SECURITY;
+ALTER TABLE team_members ENABLE ROW LEVEL SECURITY;
 ALTER TABLE team_invitations ENABLE ROW LEVEL SECURITY;
 
--- Drop existing policies if they exist
+-- STEP 10: Drop all existing policies to avoid conflicts
 DROP POLICY IF EXISTS "Users can view their own invitations" ON team_invitations;
 DROP POLICY IF EXISTS "Team owners can create invitations" ON team_invitations;
 DROP POLICY IF EXISTS "Users can update their invitation status" ON team_invitations;
 DROP POLICY IF EXISTS "Team owners can delete invitations" ON team_invitations;
+DROP POLICY IF EXISTS "Users can view teams they are members of" ON teams;
+DROP POLICY IF EXISTS "Users can create teams" ON teams;
+DROP POLICY IF EXISTS "Team owners can update teams" ON teams;
+DROP POLICY IF EXISTS "Team owners can delete teams" ON teams;
+DROP POLICY IF EXISTS "Users can view team members of their teams" ON team_members;
+DROP POLICY IF EXISTS "Team owners can add members" ON team_members;
+DROP POLICY IF EXISTS "Team owners can remove members" ON team_members;
 
--- Users can view invitations for their email
+-- STEP 11: RLS Policies for team_invitations
 CREATE POLICY "Users can view their own invitations"
   ON team_invitations FOR SELECT
   USING (
@@ -143,69 +156,56 @@ CREATE POLICY "Users can view their own invitations"
     OR invited_by = auth.uid()
   );
 
--- Team owners can create invitations (with explicit table references and type cast)
 CREATE POLICY "Team owners can create invitations"
   ON team_invitations FOR INSERT
   WITH CHECK (
     EXISTS (
-      SELECT 1 FROM team_members
-      WHERE team_members.team_id = team_invitations.team_id
-        AND team_members.user_id = auth.uid()
-        AND team_members.role::text = 'owner'
+      SELECT 1 FROM team_members tm
+      WHERE tm.team_id = team_invitations.team_id
+        AND tm.user_id = auth.uid()
+        AND tm.role = 'owner'
     )
   );
 
--- Users can update their own invitation status
 CREATE POLICY "Users can update their invitation status"
   ON team_invitations FOR UPDATE
   USING (email = (SELECT email FROM auth.users WHERE id = auth.uid()))
   WITH CHECK (status IN ('accepted', 'rejected'));
 
--- Team owners can delete invitations (with explicit table references and type cast)
 CREATE POLICY "Team owners can delete invitations"
   ON team_invitations FOR DELETE
   USING (
     EXISTS (
-      SELECT 1 FROM team_members
-      WHERE team_members.team_id = team_invitations.team_id
-        AND team_members.user_id = auth.uid()
-        AND team_members.role::text = 'owner'
+      SELECT 1 FROM team_members tm
+      WHERE tm.team_id = team_invitations.team_id
+        AND tm.user_id = auth.uid()
+        AND tm.role = 'owner'
     )
   );
 
--- STEP 10: Enable RLS for teams and team_members if not already enabled
-ALTER TABLE teams ENABLE ROW LEVEL SECURITY;
-ALTER TABLE team_members ENABLE ROW LEVEL SECURITY;
-
--- Drop existing policies if they exist
-DROP POLICY IF EXISTS "Users can view teams they are members of" ON teams;
-DROP POLICY IF EXISTS "Users can create teams" ON teams;
-DROP POLICY IF EXISTS "Team owners can update teams" ON teams;
-DROP POLICY IF EXISTS "Team owners can delete teams" ON teams;
-
--- Basic RLS policies for teams
+-- STEP 12: RLS Policies for teams
 CREATE POLICY "Users can view teams they are members of"
   ON teams FOR SELECT
   USING (
     EXISTS (
-      SELECT 1 FROM team_members
-      WHERE team_members.team_id = teams.id
-        AND team_members.user_id = auth.uid()
+      SELECT 1 FROM team_members tm
+      WHERE tm.team_id = teams.id
+        AND tm.user_id = auth.uid()
     )
   );
 
 CREATE POLICY "Users can create teams"
   ON teams FOR INSERT
-  WITH CHECK (true); -- Anyone can create a team
+  WITH CHECK (true);
 
 CREATE POLICY "Team owners can update teams"
   ON teams FOR UPDATE
   USING (
     EXISTS (
-      SELECT 1 FROM team_members
-      WHERE team_members.team_id = teams.id
-        AND team_members.user_id = auth.uid()
-        AND team_members.role::text = 'owner'
+      SELECT 1 FROM team_members tm
+      WHERE tm.team_id = teams.id
+        AND tm.user_id = auth.uid()
+        AND tm.role = 'owner'
     )
   );
 
@@ -213,19 +213,14 @@ CREATE POLICY "Team owners can delete teams"
   ON teams FOR DELETE
   USING (
     EXISTS (
-      SELECT 1 FROM team_members
-      WHERE team_members.team_id = teams.id
-        AND team_members.user_id = auth.uid()
-        AND team_members.role::text = 'owner'
+      SELECT 1 FROM team_members tm
+      WHERE tm.team_id = teams.id
+        AND tm.user_id = auth.uid()
+        AND tm.role = 'owner'
     )
   );
 
--- Drop existing policies for team_members if they exist
-DROP POLICY IF EXISTS "Users can view team members of their teams" ON team_members;
-DROP POLICY IF EXISTS "Team owners can add members" ON team_members;
-DROP POLICY IF EXISTS "Team owners can remove members" ON team_members;
-
--- Basic RLS policies for team_members
+-- STEP 13: RLS Policies for team_members
 CREATE POLICY "Users can view team members of their teams"
   ON team_members FOR SELECT
   USING (
@@ -243,7 +238,7 @@ CREATE POLICY "Team owners can add members"
       SELECT 1 FROM team_members tm
       WHERE tm.team_id = team_members.team_id
         AND tm.user_id = auth.uid()
-        AND tm.role::text = 'owner'
+        AND tm.role = 'owner'
     )
   );
 
@@ -254,11 +249,11 @@ CREATE POLICY "Team owners can remove members"
       SELECT 1 FROM team_members tm
       WHERE tm.team_id = team_members.team_id
         AND tm.user_id = auth.uid()
-        AND tm.role::text = 'owner'
+        AND tm.role = 'owner'
     )
   );
 
--- STEP 11: Create view for team member count
+-- STEP 14: Create view for team member count
 CREATE OR REPLACE VIEW team_member_counts AS
 SELECT 
   t.id as team_id,
@@ -269,18 +264,22 @@ FROM teams t
 LEFT JOIN team_members tm ON t.id = tm.team_id
 GROUP BY t.id, t.max_members;
 
--- STEP 12: Add helpful comments
+-- STEP 15: Add helpful comments
 COMMENT ON TABLE teams IS 'Teams that users can create and join';
 COMMENT ON TABLE team_members IS 'Members of teams with their roles';
 COMMENT ON TABLE team_invitations IS 'Stores pending, accepted, and rejected team invitations';
 COMMENT ON COLUMN teams.max_members IS 'Maximum number of members allowed in the team (1-100)';
+COMMENT ON COLUMN team_members.role IS 'Role of the member: owner or member';
 COMMENT ON FUNCTION check_team_member_limit() IS 'Prevents adding members beyond team limit';
 COMMENT ON FUNCTION expire_old_invitations() IS 'Marks expired pending invitations as rejected';
 
 -- Success message
 DO $$
 BEGIN
-  RAISE NOTICE 'Migration 001 completed successfully!';
-  RAISE NOTICE 'Teams, team_members, and team_invitations tables are ready.';
+  RAISE NOTICE '✅ Migration 001 completed successfully!';
+  RAISE NOTICE '✅ UUID extension enabled';
+  RAISE NOTICE '✅ Teams, team_members, and team_invitations tables created';
+  RAISE NOTICE '✅ RLS policies applied';
+  RAISE NOTICE '✅ Triggers and functions created';
 END $$;
 
