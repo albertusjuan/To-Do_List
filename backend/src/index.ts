@@ -5,6 +5,7 @@ import path from 'path';
 import todosRouter from './routes/todos';
 import teamsRouter from './routes/teams';
 import invitationsRouter from './routes/invitations';
+import workSessionsRouter from './routes/workSessions';
 
 // Load environment variables from root .env file
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
@@ -44,6 +45,9 @@ app.use('/api/teams', teamsRouter);
 
 // Invitations routes
 app.use('/api/invitations', invitationsRouter);
+
+// Work sessions routes
+app.use('/api/work-sessions', workSessionsRouter);
 
 // Start server
 app.listen(PORT, () => {

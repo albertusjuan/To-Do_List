@@ -10,7 +10,7 @@ router.use(authMiddleware);
 // Get all TODOs with optional filtering and sorting
 router.get('/', async (req: Request, res: Response) => {
   try {
-    const { status, due_date_from, due_date_to, sort_by = 'created_at', sort_order = 'desc' } = req.query;
+    const { status, due_date_from, due_date_to, sort_by = 'created_at', sort_order = 'desc', team_id } = req.query;
     const userId = req.user?.id;
 
     if (!userId) {
@@ -20,12 +20,32 @@ router.get('/', async (req: Request, res: Response) => {
       });
     }
 
-    // IMPORTANT: Filter by user_id to ensure data isolation
-    // Even with RLS, we explicitly filter for security
     let query = supabase
       .from('todos')
-      .select('*')
-      .eq('user_id', userId); // CRITICAL: Only fetch user's own todos
+      .select('*');
+
+    // Filter by team_id if provided (team mode)
+    if (team_id) {
+      // Check if user is a member of this team
+      const { data: membership } = await supabase
+        .from('team_members')
+        .select('id')
+        .eq('team_id', team_id)
+        .eq('user_id::uuid', userId)
+        .single();
+
+      if (!membership) {
+        return res.status(403).json({
+          success: false,
+          error: 'Access denied to team todos'
+        });
+      }
+
+      query = query.eq('team_id', team_id);
+    } else {
+      // Personal mode: only fetch user's own todos (no team_id)
+      query = query.eq('user_id', userId).is('team_id', null);
+    }
 
     // Filter by status
     if (status) {
@@ -49,10 +69,23 @@ router.get('/', async (req: Request, res: Response) => {
 
     if (error) throw error;
 
+    // Fetch creator email for each todo
+    const todosWithCreator = await Promise.all(
+      (data || []).map(async (todo) => {
+        try {
+          const { data: email } = await supabase
+            .rpc('get_user_email_by_id', { p_user_id: todo.user_id });
+          return { ...todo, creator_email: email || 'Unknown' };
+        } catch {
+          return { ...todo, creator_email: 'Unknown' };
+        }
+      })
+    );
+
     res.json({
       success: true,
-      data,
-      count: data?.length || 0
+      data: todosWithCreator,
+      count: todosWithCreator?.length || 0
     });
   } catch (error: any) {
     res.status(500).json({

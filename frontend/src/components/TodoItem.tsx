@@ -78,7 +78,12 @@ export function TodoItem({ todo, onEdit, onDelete, onQuickUpdate, isTeamMode }: 
       <div className="todo-content">
         <div className="todo-header-row">
           <h3 className="todo-name">{todo.name}</h3>
-          {isTeamMode && <span className="team-badge">Team</span>}
+          <div className="todo-badges">
+            {isTeamMode && todo.creator_email && (
+              <span className="creator-badge">👤 {todo.creator_email}</span>
+            )}
+            {isTeamMode && <span className="team-badge">Team</span>}
+          </div>
         </div>
         
         <p className="todo-description">{todo.description}</p>

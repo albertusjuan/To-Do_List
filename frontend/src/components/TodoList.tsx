@@ -23,6 +23,8 @@ export function TodoList({ userId, mode }: TodoListProps) {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [viewMode, setViewMode] = useState<'list' | 'calendar' | 'teams'>('list');
   const [defaultDate, setDefaultDate] = useState<Date | null>(null);
+  const [teams, setTeams] = useState<any[]>([]);
+  const [selectedTeamId, setSelectedTeamId] = useState<string>('');
 
   // Reset to list view when switching from team to personal mode
   useEffect(() => {
@@ -31,9 +33,30 @@ export function TodoList({ userId, mode }: TodoListProps) {
     }
   }, [mode, viewMode]);
 
+  // Fetch teams when in team mode
+  useEffect(() => {
+    const fetchTeams = async () => {
+      if (mode === 'team') {
+        try {
+          const result = await api.get('/api/teams');
+          if (result.success && result.data) {
+            setTeams(result.data);
+            // Auto-select first team if available
+            if (result.data.length > 0 && !selectedTeamId) {
+              setSelectedTeamId(result.data[0].id);
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching teams:', error);
+        }
+      }
+    };
+    fetchTeams();
+  }, [mode]);
+
   useEffect(() => {
     fetchTodos();
-  }, [filterStatus, sortBy, sortOrder, mode]);
+  }, [filterStatus, sortBy, sortOrder, mode, selectedTeamId]);
 
   const fetchTodos = async () => {
     try {
@@ -44,24 +67,26 @@ export function TodoList({ userId, mode }: TodoListProps) {
         url += `&status=${filterStatus}`;
       }
 
+      // Add team_id for team mode
+      if (mode === 'team' && selectedTeamId) {
+        url += `&team_id=${selectedTeamId}`;
+      }
+
       const result = await api.get<Todo[]>(url);
       
       if (result.success && result.data) {
-        // Filter based on mode: Personal (team_id is null) or Team (team_id is not null)
-        const filteredTodos = result.data.filter((todo: Todo) => {
-          if (mode === 'personal') {
-            return todo.team_id === null;
-          } else {
-            return todo.team_id !== null;
-          }
-        });
-        setTodos(filteredTodos);
+        setTodos(result.data);
       } else {
         console.error('Error fetching todos:', result.error);
-        alert(`Failed to fetch todos: ${result.error}`);
+        // Don't show alert for team access denied - just show empty list
+        if (result.error !== 'Access denied to team todos') {
+          alert(`Failed to fetch todos: ${result.error}`);
+        }
+        setTodos([]);
       }
     } catch (error) {
       console.error('Error fetching todos:', error);
+      setTodos([]);
     } finally {
       setLoading(false);
     }
@@ -183,6 +208,23 @@ export function TodoList({ userId, mode }: TodoListProps) {
         )}
       </div>
 
+      {mode === 'team' && viewMode !== 'teams' && (
+        <div className="team-selector">
+          <label>Select Team:</label>
+          <select 
+            value={selectedTeamId} 
+            onChange={(e) => setSelectedTeamId(e.target.value)}
+            className="team-select"
+          >
+            {teams.map((team) => (
+              <option key={team.id} value={team.id}>
+                {team.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
       {viewMode === 'list' && (
         <div className="todo-controls">
           <div className="filter-group">
@@ -258,7 +300,7 @@ export function TodoList({ userId, mode }: TodoListProps) {
         <TodoForm
           todo={editingTodo}
           defaultDate={defaultDate}
-          teamId={null}
+          teamId={mode === 'team' ? selectedTeamId : null}
           isTeamMode={mode === 'team'}
           onClose={handleFormClose}
         />

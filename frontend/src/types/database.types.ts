@@ -10,8 +10,12 @@ export interface Todo {
   due_date: string;
   status: TodoStatus;
   team_id: string | null;
+  estimated_hours: number | null;
   created_at: string;
   updated_at: string;
+  creator_email?: string;
+  work_sessions?: WorkSession[];
+  total_time_minutes?: number;
 }
 
 export interface Team {
@@ -42,12 +46,24 @@ export interface TeamInvitation {
   expires_at: string;
 }
 
+export interface WorkSession {
+  id: string;
+  todo_id: string;
+  user_id: string;
+  started_at: string;
+  ended_at: string | null;
+  duration_minutes: number | null;
+  created_at: string;
+  user_email?: string;
+}
+
 export interface CreateTodoInput {
   name: string;
   description: string;
   due_date: string;
   status?: TodoStatus;
   team_id?: string | null;
+  estimated_hours?: number | null;
 }
 
 export interface UpdateTodoInput {
