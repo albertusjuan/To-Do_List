@@ -24,6 +24,13 @@ export function TodoList({ userId, mode }: TodoListProps) {
   const [viewMode, setViewMode] = useState<'list' | 'calendar' | 'teams'>('list');
   const [defaultDate, setDefaultDate] = useState<Date | null>(null);
 
+  // Reset to list view when switching from team to personal mode
+  useEffect(() => {
+    if (mode === 'personal' && viewMode === 'teams') {
+      setViewMode('list');
+    }
+  }, [mode, viewMode]);
+
   useEffect(() => {
     fetchTodos();
   }, [filterStatus, sortBy, sortOrder, mode]);

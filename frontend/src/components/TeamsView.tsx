@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Team, TeamMember, TeamInvitation } from '../types/database.types';
+import { api } from '../utils/api';
 import './TeamsView.css';
 
 export function TeamsView() {
@@ -20,16 +21,17 @@ export function TeamsView() {
   const fetchTeams = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/teams');
-      const result = await response.json();
+      const result = await api.get<Team[]>('/api/teams');
       
-      if (result.success) {
+      if (result.success && result.data) {
         setTeams(result.data);
         // Fetch members and invitations for each team
         result.data.forEach((team: Team) => {
           fetchTeamMembers(team.id);
           fetchTeamInvitations(team.id);
         });
+      } else {
+        console.error('Error fetching teams:', result.error);
       }
     } catch (error) {
       console.error('Error fetching teams:', error);
@@ -40,11 +42,10 @@ export function TeamsView() {
 
   const fetchTeamMembers = async (teamId: string) => {
     try {
-      const response = await fetch(`/api/teams/${teamId}/members`);
-      const result = await response.json();
+      const result = await api.get<TeamMember[]>(`/api/teams/${teamId}/members`);
       
-      if (result.success) {
-        setTeamMembers(prev => ({ ...prev, [teamId]: result.data }));
+      if (result.success && result.data) {
+        setTeamMembers(prev => ({ ...prev, [teamId]: result.data || [] }));
       }
     } catch (error) {
       console.error('Error fetching team members:', error);
@@ -53,11 +54,10 @@ export function TeamsView() {
 
   const fetchTeamInvitations = async (teamId: string) => {
     try {
-      const response = await fetch(`/api/teams/${teamId}/invitations`);
-      const result = await response.json();
+      const result = await api.get<TeamInvitation[]>(`/api/teams/${teamId}/invitations`);
       
-      if (result.success) {
-        setTeamInvitations(prev => ({ ...prev, [teamId]: result.data }));
+      if (result.success && result.data) {
+        setTeamInvitations(prev => ({ ...prev, [teamId]: result.data || [] }));
       }
     } catch (error) {
       console.error('Error fetching team invitations:', error);
@@ -87,18 +87,10 @@ export function TeamsView() {
     }
     
     try {
-      const response = await fetch('/api/teams', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...formData,
-          invite_emails: validEmails
-        }),
+      const result = await api.post<Team>('/api/teams', {
+        ...formData,
+        invite_emails: validEmails
       });
-
-      const result = await response.json();
 
       if (result.success) {
         alert(`Team created successfully! ${validEmails.length > 0 ? `Invitations sent to ${validEmails.length} member(s).` : ''}`);
@@ -107,7 +99,7 @@ export function TeamsView() {
         setShowForm(false);
         fetchTeams();
       } else {
-        alert(result.message || 'Failed to create team');
+        alert(result.error || 'Failed to create team');
       }
     } catch (error) {
       console.error('Error creating team:', error);
@@ -194,17 +186,17 @@ export function TeamsView() {
     if (!confirm('Are you sure you want to delete this team?')) return;
 
     try {
-      const response = await fetch(`/api/teams/${id}`, {
-        method: 'DELETE',
-      });
-
-      const result = await response.json();
+      const result = await api.delete(`/api/teams/${id}`);
 
       if (result.success) {
+        alert('Team deleted successfully');
         fetchTeams();
+      } else {
+        alert(`Error: ${result.error}`);
       }
     } catch (error) {
       console.error('Error deleting team:', error);
+      alert('Failed to delete team');
     }
   };
 
