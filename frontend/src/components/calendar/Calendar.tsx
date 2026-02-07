@@ -99,9 +99,9 @@ export function Calendar({ todos, onDateClick, onEditTodo, onDeleteTodo, onCreat
           
           {days.map(day => {
             const dayTodos = getTodosForDate(day);
-            const hasOverdue = dayTodos.some(t => 
-              t.status !== 'COMPLETED' && new Date(t.due_date) < new Date()
-            );
+            const notStartedCount = dayTodos.filter(t => t.status === 'NOT_STARTED').length;
+            const inProgressCount = dayTodos.filter(t => t.status === 'IN_PROGRESS').length;
+            const completedCount = dayTodos.filter(t => t.status === 'COMPLETED').length;
             
             return (
               <div
@@ -111,9 +111,22 @@ export function Calendar({ todos, onDateClick, onEditTodo, onDeleteTodo, onCreat
               >
                 <span className="day-number">{day}</span>
                 {dayTodos.length > 0 && (
-                  <div className="todo-indicators">
-                    {hasOverdue && <span className="overdue-indicator">!</span>}
-                    <span className="todo-count">{dayTodos.length}</span>
+                  <div className="todo-status-counts">
+                    {notStartedCount > 0 && (
+                      <span className="status-badge not-started" title="Not Started">
+                        {notStartedCount}
+                      </span>
+                    )}
+                    {inProgressCount > 0 && (
+                      <span className="status-badge in-progress" title="In Progress">
+                        {inProgressCount}
+                      </span>
+                    )}
+                    {completedCount > 0 && (
+                      <span className="status-badge completed" title="Completed">
+                        {completedCount}
+                      </span>
+                    )}
                   </div>
                 )}
               </div>
