@@ -39,15 +39,7 @@ export function TodoList({ userId, mode }: TodoListProps) {
       const result = await response.json();
       
       if (result.success) {
-        // Filter based on mode: Personal (team_id is null) or Team (team_id is not null)
-        const filteredTodos = result.data.filter((todo: Todo) => {
-          if (mode === 'personal') {
-            return todo.team_id === null;
-          } else {
-            return todo.team_id !== null;
-          }
-        });
-        setTodos(filteredTodos);
+        setTodos(result.data);
       }
     } catch (error) {
       console.error('Error fetching todos:', error);
@@ -209,7 +201,7 @@ export function TodoList({ userId, mode }: TodoListProps) {
         </div>
       )}
 
-      {viewMode === 'list' ? (
+      {viewMode === 'list' && (
         <div className="todo-list">
           {todos.length === 0 ? (
             <div className="todo-empty">
@@ -227,7 +219,9 @@ export function TodoList({ userId, mode }: TodoListProps) {
             ))
           )}
         </div>
-      ) : (
+      )}
+
+      {viewMode === 'calendar' && (
         <Calendar
           todos={todos}
           onEditTodo={handleEdit}
