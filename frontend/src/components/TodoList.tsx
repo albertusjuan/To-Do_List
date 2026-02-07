@@ -25,6 +25,7 @@ export function TodoList({ userId, mode }: TodoListProps) {
   const [defaultDate, setDefaultDate] = useState<Date | null>(null);
   const [teams, setTeams] = useState<any[]>([]);
   const [selectedTeamId, setSelectedTeamId] = useState<string>('');
+  const [calendarSelectedDate, setCalendarSelectedDate] = useState<Date | null>(null);
 
   // Reset to list view when switching from team to personal mode
   useEffect(() => {
@@ -56,6 +57,18 @@ export function TodoList({ userId, mode }: TodoListProps) {
 
   useEffect(() => {
     fetchTodos();
+
+    // Poll for updates every 1h  in team mode to sync status changes
+    let pollInterval: NodeJS.Timeout | null = null;
+    if (mode === 'team' && selectedTeamId) {
+      pollInterval = setInterval(() => {
+        fetchTodos();
+      }, 3600000); // Refresh every 1h
+    }
+
+    return () => {
+      if (pollInterval) clearInterval(pollInterval);
+    };
   }, [filterStatus, sortBy, sortOrder, mode, selectedTeamId]);
 
   const fetchTodos = async () => {
@@ -172,6 +185,12 @@ export function TodoList({ userId, mode }: TodoListProps) {
     }
   };
 
+  const handleWorkStarted = () => {
+    // Switch to calendar view and select today's date
+    setViewMode('calendar');
+    setCalendarSelectedDate(new Date());
+  };
+
   if (loading) {
     return <div className="todo-loading">Loading todos...</div>;
   }
@@ -208,20 +227,33 @@ export function TodoList({ userId, mode }: TodoListProps) {
         )}
       </div>
 
-      {mode === 'team' && viewMode !== 'teams' && (
-        <div className="team-selector">
-          <label>Select Team:</label>
-          <select 
-            value={selectedTeamId} 
-            onChange={(e) => setSelectedTeamId(e.target.value)}
-            className="team-select"
-          >
+      {mode === 'team' && viewMode !== 'teams' && teams.length > 0 && (
+        <div className="team-selector-refined">
+          <div className="team-selector-header">
+            <svg className="team-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+            <span className="team-selector-label">Active Team</span>
+          </div>
+          <div className="team-selector-dropdown">
             {teams.map((team) => (
-              <option key={team.id} value={team.id}>
-                {team.name}
-              </option>
+              <button
+                key={team.id}
+                onClick={() => setSelectedTeamId(team.id)}
+                className={`team-option ${selectedTeamId === team.id ? 'active' : ''}`}
+              >
+                <span className="team-option-name">{team.name}</span>
+                {selectedTeamId === team.id && (
+                  <svg className="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                )}
+              </button>
             ))}
-          </select>
+          </div>
         </div>
       )}
 
@@ -277,6 +309,7 @@ export function TodoList({ userId, mode }: TodoListProps) {
                 onDelete={handleDelete}
                 onQuickUpdate={handleQuickUpdate}
                 isTeamMode={mode === 'team'}
+                onWorkStarted={handleWorkStarted}
               />
             ))
           )}
@@ -289,6 +322,8 @@ export function TodoList({ userId, mode }: TodoListProps) {
           onEditTodo={handleEdit}
           onDeleteTodo={handleDelete}
           onCreateTodo={handleCreateWithDate}
+          isTeamMode={mode === 'team'}
+          initialSelectedDate={calendarSelectedDate}
         />
       )}
 

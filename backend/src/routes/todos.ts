@@ -200,6 +200,42 @@ router.put('/:id', async (req: Request, res: Response) => {
       });
     }
 
+    // First, check if the todo exists and get its team_id
+    const { data: existingTodo, error: fetchError } = await supabase
+      .from('todos')
+      .select('user_id, team_id')
+      .eq('id', id)
+      .single();
+
+    if (fetchError || !existingTodo) {
+      return res.status(404).json({
+        success: false,
+        error: 'TODO not found'
+      });
+    }
+
+    // Check access: either owner OR team member
+    let hasAccess = existingTodo.user_id === userId;
+    
+    if (!hasAccess && existingTodo.team_id) {
+      // Check if user is a member of the team
+      const { data: membership, error: memberError } = await supabase
+        .from('team_members')
+        .select('id')
+        .eq('team_id', existingTodo.team_id)
+        .eq('user_id', userId)
+        .single();
+
+      hasAccess = !!membership && !memberError;
+    }
+
+    if (!hasAccess) {
+      return res.status(403).json({
+        success: false,
+        error: 'Access denied: You are not authorized to update this todo'
+      });
+    }
+
     const updateData: any = {};
     if (name !== undefined) updateData.name = name;
     if (description !== undefined) updateData.description = description;
@@ -207,23 +243,15 @@ router.put('/:id', async (req: Request, res: Response) => {
     if (status !== undefined) updateData.status = status;
     if (team_id !== undefined) updateData.team_id = team_id;
 
-    // CRITICAL: Filter by user_id to prevent updating other users' todos
+    // Update the todo
     const { data, error } = await supabase
       .from('todos')
       .update(updateData)
       .eq('id', id)
-      .eq('user_id', userId) // Only allow updating own todos
       .select()
       .single();
 
     if (error) throw error;
-
-    if (!data) {
-      return res.status(404).json({
-        success: false,
-        error: 'TODO not found or access denied'
-      });
-    }
 
     res.json({
       success: true,

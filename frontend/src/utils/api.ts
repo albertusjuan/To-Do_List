@@ -9,6 +9,14 @@ async function getAuthToken(): Promise<string | null> {
 }
 
 /**
+ * Get the current user
+ */
+export async function getCurrentUser() {
+  const { data: { user } } = await supabase.auth.getUser();
+  return user;
+}
+
+/**
  * Enhanced fetch with automatic auth token injection
  */
 export async function apiFetch(url: string, options: RequestInit = {}): Promise<Response> {
