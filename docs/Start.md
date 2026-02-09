@@ -147,6 +147,6 @@ npm run dev
 3. Click **"Sign Up"**
 4. Enter your email and password
 5. Click **"Sign Up"**
-6. You're in! 🎉
+6. You're in! 
 
 ---
