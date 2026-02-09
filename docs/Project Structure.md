@@ -242,3 +242,44 @@ backend/
    → `TodoList.tsx` adds it to the list
    → Form closes
    → List updates instantly (optimistic update!)
+
+---
+
+## Recent Bug Fixes (Feb 9, 2026)
+
+### Critical Issues Resolved - Blank Pages & Layout Problems
+
+**Issue 1: Duplicate HTML Structure in index.html**
+- **Problem**: The entire `<head>` and `<body>` sections were duplicated after the closing `</html>` tag
+- **Impact**: Invalid HTML structure causing blank pages and rendering failures
+- **Fix**: Removed duplicate lines 15-27 from `frontend/index.html`
+- **Result**: Clean, valid HTML5 structure
+
+**Issue 2: Massive CSS Duplication in TodoList.css**
+- **Problem**: 350+ lines of CSS duplicated (lines 354-702 were exact copies)
+- **Impact**: CSS conflicts, extended page height, performance degradation
+- **Affected Styles**: 
+  - `.todo-header`, `.view-toggle`, `.toggle-btn`
+  - `.btn-create`, `.team-selector-refined`
+  - `.filter-select`, `.sort-select`, `.btn-sort-order`
+  - All team-mode variants
+- **Fix**: Removed duplicate CSS blocks from `frontend/src/components/TodoList.css`
+- **Result**: Clean, maintainable CSS with ~50% reduction in file size
+
+**Issue 3: Missing min-height on Main Container**
+- **Problem**: `.main-container` lacked minimum height specification
+- **Impact**: Potential blank pages when content is minimal
+- **Fix**: Added `min-height: 100vh` to `.main-container` in `frontend/src/pages/Main.css`
+- **Result**: Consistent full-viewport layout regardless of content
+
+### Files Modified
+- `frontend/index.html` - Fixed HTML structure
+- `frontend/src/components/TodoList.css` - Removed CSS duplication
+- `frontend/src/pages/Main.css` - Added viewport height
+
+### Testing Recommendations
+1. Test all pages load correctly (Login, Signup, Main)
+2. Verify no layout shifts or blank pages
+3. Check both Personal and Team modes
+4. Validate responsive behavior on different screen sizes
+5. Confirm no console errors in browser DevTools
