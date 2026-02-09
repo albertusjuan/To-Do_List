@@ -1,6 +1,4 @@
-# Project Structure - The Complete Map 🗺️
-
-Let me walk you through how this project is organized. Think of it as a tour of your new codebase!
+# Project Structure 
 
 ## The Big Picture
 
@@ -14,7 +12,7 @@ Sleekflow-To-Do-list/
 
 ---
 
-## 🎨 Frontend (`/frontend`)
+## Frontend (`/frontend`)
 
 This is where all the magic happens visually. Built with React and TypeScript.
 
@@ -168,7 +166,7 @@ backend/
 
 ---
 
-## 🗄️ Database (Supabase/PostgreSQL)
+## Database (Supabase/PostgreSQL)
 
 ### Tables
 
@@ -225,9 +223,7 @@ backend/
 
 ---
 
-## 🎯 How Data Flows
-
-Let's trace what happens when you create a todo:
+## How Data Flows
 
 1. **User clicks "New TODO"** 
    → `TodoList.tsx` shows `TodoForm.tsx`
@@ -246,100 +242,3 @@ Let's trace what happens when you create a todo:
    → `TodoList.tsx` adds it to the list
    → Form closes
    → List updates instantly (optimistic update!)
-
----
-
-## 🎨 Styling System
-
-### Colors & Themes
-
-**Personal Mode (Light)**
-- Primary: Blue (#3b82f6)
-- Background: White/Light gray
-- Text: Dark
-
-**Team Mode (Dark)**
-- Primary: Lighter blue (#60a5fa)
-- Background: Dark gradients
-- Text: White
-- Glassmorphism effects
-
-### Special Effects
-
-- **Glassmorphism** - Frosted glass look with `backdrop-filter: blur()`
-- **Smooth transitions** - Everything uses `transition` for butter-smooth animations
-- **Gradient backgrounds** - Status-based colors for visual feedback
-- **Custom dropdowns** - No default ugly select boxes here!
-
----
-
-## 🔐 Security Features
-
-1. **Authentication**
-   - Every API call requires a valid JWT token
-   - Tokens automatically attached by `api.ts`
-   - Backend validates on every request
-
-2. **Authorization**
-   - Users can only see their own personal todos
-   - Team todos visible only to team members
-   - Only task owner can mark team tasks as completed
-
-3. **Row Level Security (RLS)**
-   - Database enforces access rules
-   - Even if API is bypassed, database blocks unauthorized access
-
----
-
-## 🚀 Key Features Locations
-
-Want to find something specific? Here's where to look:
-
-**Mode Toggle (TODO/TeamDO)**
-- Component: `Main.tsx` (lines with `mode-toggle-container`)
-- Styles: `Main.css` (`.mode-toggle-container`)
-
-**Work Button**
-- Component: `TodoItem.tsx` (search for `btn-work`)
-- Logic: `handleWorkButton()` function
-
-**Calendar Work Activity**
-- Component: `Calendar.tsx` (search for `work-activity-section`)
-- Styles: `Calendar.css` (`.work-activity-section`)
-
-**Notifications**
-- Component: `Main.tsx` (search for `notifications-panel`)
-- Styles: `Main.css` (`.notifications-panel`)
-
-**Team Creation**
-- Component: `TeamsView.tsx` (search for `create-team-form`)
-- Backend: `backend/src/routes/teams.ts` POST endpoint
-
----
-
-## 📦 Dependencies Worth Knowing
-
-**Frontend:**
-- `react-router-dom` - Page navigation
-- `@supabase/supabase-js` - Database client
-
-**Backend:**
-- `express` - Web server
-- `cors` - Allow frontend to call backend
-- `dotenv` - Environment variables
-- `@supabase/supabase-js` - Database client
-
----
-
-## 🔄 Development Workflow
-
-1. Frontend runs on `http://localhost:5173` (Vite dev server)
-2. Backend runs on `http://localhost:5000` (Express server)
-3. Frontend proxies `/api/*` requests to backend (configured in `vite.config.ts`)
-4. Both watch for changes and auto-reload
-5. TypeScript compiles on the fly
-
----
-
-That's the complete tour! Now you know where everything lives and how it all connects. Happy coding! 🎉
-
