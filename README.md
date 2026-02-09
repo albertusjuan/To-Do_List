@@ -1,72 +1,62 @@
 # Sleekflow To-Do List
 
-Hey there! 👋 Welcome to your new favorite productivity app. This is a beautifully designed to-do list that helps you manage both personal tasks and team projects all in one place.
+A collaborative task management application built with React and Express. Features personal and team workspaces, real-time updates, and a calendar view for managing tasks.
 
-## What Makes This Special?
+## Features
 
-This isn't just another boring to-do app. Here's what makes it awesome:
+- Personal and team task management with mode switching
+- Real-time collaboration using Supabase subscriptions
+- Calendar view for visualizing tasks
+- Work session tracking
+- Push notifications for deadlines and team invitations
+- Glassmorphism UI design
 
-- **Personal & Team Modes** - Switch between your personal tasks and team projects with a slick animated toggle
-- **Real-Time Collaboration** - See when your teammates start working on tasks, complete work together
-- **Beautiful Calendar View** - Visualize your tasks and work progress across days
-- **Smart Notifications** - Get reminded about upcoming deadlines and team invitations
-- **Work Tracking** - Automatically track who's working on what and for how long
-- **Smooth Animations** - Everything feels buttery smooth with glassmorphism design
+## Setup
 
-## Getting Started in 3 Minutes ⏱️
-
-1. **Install everything** (this takes about 1 minute)
-   ```bash
-   npm run install:all
-   ```
-
-2. **Set up your database** (see the guide in `docs/Getting-Started.md`)
-   - You'll need a free Supabase account
-   - Copy your connection details to `.env`
-
-3. **Fire it up!**
-   ```bash
-   npm run dev
-   ```
-
-That's it! Open http://localhost:5173 and you're ready to roll.
-
-## What's Inside?
-
-- **Frontend** - A sleek React app that feels like a native application
-- **Backend** - A solid Express API that handles all the heavy lifting
-- **Database** - PostgreSQL via Supabase with smart security rules
-- **Authentication** - Secure login system so your data stays private
-
-## Want to Learn More?
-
-Check out the `docs` folder for:
-- **Project Structure** - A detailed map of how everything is organized
-- **Getting Started Guide** - Step-by-step setup instructions
-- More coming soon!
-
-## Tech Stack (For the Curious 🤓)
-
-- React 18 + TypeScript + Vite (lightning fast!)
-- Express + TypeScript (rock solid backend)
-- Supabase (PostgreSQL + Auth + Real-time)
-- Modern CSS with glassmorphism effects
-
-## Commands You'll Use
+Install dependencies for both frontend and backend:
 
 ```bash
-npm run dev              # Start everything (recommended)
-npm run dev:frontend     # Just the frontend
-npm run dev:backend      # Just the backend
-npm run build            # Build for production
+npm run install:all
 ```
 
-## Need Help?
+Configure your database connection in `.env` (see `docs/Getting-Started.md` for details):
 
-- Check the docs folder
-- Look at the code comments
-- The app is pretty intuitive - just dive in and explore!
+```
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_anon_key
+```
 
----
+Start the development servers:
 
-Built with ❤️ for productive people everywhere
+```bash
+npm run dev
+```
+
+Frontend runs on http://localhost:5173, backend on http://localhost:3000.
+
+## Project Structure
+
+- **frontend/** - React application with TypeScript
+- **backend/** - Express API server
+- **docs/** - Documentation and setup guides
+
+## Tech Stack
+
+- Frontend: React 18, TypeScript, Vite
+- Backend: Express, TypeScript
+- Database: PostgreSQL (Supabase)
+- Authentication: Supabase Auth
+- Real-time: Supabase Realtime
+
+## Available Scripts
+
+```bash
+npm run dev              # Start both frontend and backend
+npm run dev:frontend     # Frontend only
+npm run dev:backend      # Backend only
+npm run build            # Production build
+```
+
+## Documentation
+
+See the `docs` folder for detailed information on project structure and setup instructions.
