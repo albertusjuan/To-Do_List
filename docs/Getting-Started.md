@@ -1,68 +1,119 @@
-# Getting Started - Your Complete Setup Guide 🚀
+# Getting Started Guide 🚀
 
-Welcome! This guide will take you from zero to hero in about 10 minutes. Let's get your development environment up and running.
+Welcome! You've downloaded the code, and now you're ready to get it running on your machine. This guide will walk you through every step - from installing dependencies to seeing the app in your browser.
 
-## What You'll Need
+**Estimated time:** 15-20 minutes
 
-Before we start, make sure you have these installed:
+---
+
+## 📋 Quick Checklist
+
+Here's what we'll do:
+
+- [ ] **Step 1:** Open the project folder
+- [ ] **Step 2:** Install all dependencies
+- [ ] **Step 3:** Set up Supabase database
+- [ ] **Step 4:** Configure environment variables
+- [ ] **Step 5:** Launch the app
+- [ ] **Step 6:** Create your first account
+
+Let's get started! 👇
+
+---
+
+## Prerequisites
+
+Before you begin, make sure you have these installed on your computer:
 
 - **Node.js** (version 16 or higher) - [Download here](https://nodejs.org/)
-- **npm** (comes with Node.js)
-- A code editor (VS Code is great)
-- A free Supabase account - [Sign up here](https://supabase.com/)
+  - To check: Open terminal and run `node --version`
+- **npm** (comes automatically with Node.js)
+  - To check: Run `npm --version`
+- A code editor (we recommend [VS Code](https://code.visualstudio.com/))
+- A free **Supabase account** - [Sign up here](https://supabase.com/)
 
 ---
 
-## Step 1: Get the Code (2 minutes)
+## Step 1: Open the Project 📁
 
-If you haven't already, clone or download this project:
+You've already downloaded the code! Now let's navigate to it:
 
+**On Windows:**
 ```bash
-git clone <your-repo-url>
-cd Sleekflow-To-Do-list
+cd "C:\Users\YourName\Downloads\Sleekflow-To-Do-list"
 ```
 
+**On Mac/Linux:**
+```bash
+cd ~/Downloads/Sleekflow-To-Do-list
+```
+
+💡 **Tip:** You can also drag and drop the folder into your terminal to get the path automatically!
+
 ---
 
-## Step 2: Install Dependencies (2 minutes)
+## Step 2: Install All Dependencies 📦
 
-This installs everything you need for both frontend and backend:
+This project has two parts: a **frontend** (what you see) and a **backend** (the server). We need to install packages for both.
+
+Run this single command - it installs everything:
 
 ```bash
 npm run install:all
 ```
 
-Grab a coffee ☕ while npm does its thing. You'll see it installing packages for the root, frontend, and backend.
+You'll see something like:
+```
+Installing dependencies for root...
+Installing dependencies for frontend...
+Installing dependencies for backend...
+```
+
+⏱️ This takes 2-3 minutes. Perfect time for a coffee break! ☕
 
 ---
 
-## Step 3: Set Up Your Database (3 minutes)
+## Step 3: Set Up Your Database (Supabase) 🗄️
 
-### Create a Supabase Project
+We'll use Supabase as our database (it's free and really powerful!).
 
-1. Go to [supabase.com](https://supabase.com/) and sign in
-2. Click **"New Project"**
-3. Give it a name (like "todo-app")
-4. Choose a database password (save this!)
-5. Pick a region close to you
-6. Click **"Create new project"**
-7. Wait about 2 minutes while Supabase sets everything up
+### 3A. Create a Supabase Project
 
-### Get Your Connection Details
+1. Go to [supabase.com](https://supabase.com/) and sign in (or create an account)
+2. Click the **"New Project"** button
+3. Fill in the details:
+   - **Name:** `todo-app` (or whatever you like)
+   - **Database Password:** Create a strong password and **save it somewhere safe!** 🔒
+   - **Region:** Choose the one closest to you (for better speed)
+4. Click **"Create new project"**
+5. ⏱️ Wait 2-3 minutes while Supabase provisions your database
 
-Once your project is ready:
+☕ Great time for another coffee break!
 
-1. Click on **"Settings"** (gear icon) in the sidebar
-2. Go to **"API"**
-3. You'll see two important things:
-   - **Project URL** (looks like `https://xxxxx.supabase.co`)
-   - **anon public** key (a long string starting with `eyJ...`)
+### 3B. Get Your API Keys
 
-### Set Up Your Database Tables
+Once your project shows "Project is ready":
 
-1. In Supabase, click **"SQL Editor"** in the sidebar
+1. Look at the left sidebar
+2. Click **"Settings"** (the gear icon ⚙️ at the bottom)
+3. Click **"API"** in the settings menu
+4. You'll see a section called **"Project API keys"**
+
+📝 **Copy these three things** (you'll need them soon):
+
+- **Project URL:** Something like `https://abcdefgh.supabase.co`
+- **anon public key:** A long string starting with `eyJhbGc...`
+- **service_role key:** Another long string (click "Reveal" to see it)
+
+💡 **Tip:** Keep this tab open - you'll need to copy-paste these in Step 4!
+
+### 3C. Create Your Database Tables
+
+Now we'll create all the tables our app needs.
+
+1. In Supabase, click **"SQL Editor"** in the left sidebar
 2. Click **"New query"**
-3. Copy and paste this SQL (creates all your tables):
+3. **Copy the entire SQL script below** and paste it into the editor:
 
 ```sql
 -- Enable UUID extension
@@ -263,56 +314,131 @@ CREATE POLICY "Users can update their own work sessions"
   USING (user_id = auth.uid());
 ```
 
-4. Click **"Run"** (or press Ctrl+Enter)
-5. You should see "Success. No rows returned" - that's perfect!
+4. Click the **"Run"** button (or press `Ctrl+Enter` on Windows, `Cmd+Return` on Mac)
+
+5. ✅ **You should see:** "Success. No rows returned"
+   - This is perfect! It means all tables were created successfully.
+
+6. **Verify it worked:**
+   - Click **"Table Editor"** in the left sidebar
+   - You should now see these tables: `todos`, `teams`, `team_members`, `team_invitations`, `work_sessions`
+   - If you see them, you're all set! 🎉
+
+❌ **If you see an error:**
+   - Make sure you copied the entire SQL script (scroll to the top and bottom)
+   - Try running it again
+   - Check that your project is fully initialized (sometimes it takes a few extra seconds)
 
 ---
 
-## Step 4: Configure Your Environment (1 minute)
+## Step 4: Configure Environment Variables 🔐
 
-Create a file called `.env` in the root of your project (next to `package.json`):
+Now we need to tell the app how to connect to your Supabase database. We do this with environment variables.
 
-```bash
-# In the project root
-touch .env
-```
+### Create Backend .env File
 
-Open `.env` and add your Supabase details:
+1. Navigate to the `backend` folder:
+   ```bash
+   cd backend
+   ```
 
-```env
-# Supabase Configuration
-VITE_SUPABASE_URL=https://xxxxx.supabase.co
-VITE_SUPABASE_ANON_KEY=eyJxxxx...your-long-key-here
+2. Create a `.env` file:
+   - **On Windows:** Right-click in the backend folder → New → Text Document → Name it `.env` (delete .txt extension)
+   - **On Mac/Linux:** Run `touch .env`
+   - **Or:** Just create it in VS Code
 
-# Server Configuration
-PORT=5000
-```
+3. Open `backend/.env` and add:
+   ```env
+   # Supabase Configuration
+   SUPABASE_URL=https://xxxxx.supabase.co
+   SUPABASE_ANON_KEY=eyJxxxx...your-anon-key-here
+   SUPABASE_SERVICE_KEY=eyJxxxx...your-service-role-key-here
+   
+   # Server Configuration
+   PORT=5000
+   NODE_ENV=development
+   ```
 
-Replace:
-- `https://xxxxx.supabase.co` with your Project URL
-- `eyJxxxx...` with your anon public key
+4. Go back to the project root:
+   ```bash
+   cd ..
+   ```
 
-**Important:** Keep this file private! Never commit it to git (it's already in `.gitignore`).
+### Create Frontend .env File
+
+1. Navigate to the `frontend` folder:
+   ```bash
+   cd frontend
+   ```
+
+2. Create a `.env` file (same method as above)
+
+3. Open `frontend/.env` and add:
+   ```env
+   # Supabase Configuration
+   VITE_SUPABASE_URL=https://xxxxx.supabase.co
+   VITE_SUPABASE_ANON_KEY=eyJxxxx...your-anon-key-here
+   ```
+
+4. Go back to the project root:
+   ```bash
+   cd ..
+   ```
+
+### Replace with Your Actual Keys
+
+For **both** files, replace:
+- `https://xxxxx.supabase.co` → Your **Project URL** from Supabase
+- `eyJxxxx...your-anon-key-here` → Your **anon public** key from Supabase
+- `eyJxxxx...your-service-role-key-here` → Your **service_role** key from Supabase (backend only)
+
+**Where to find the service_role key:**
+1. Go to your Supabase project
+2. Click **Settings** → **API**
+3. Scroll down to **Project API keys**
+4. Copy the **service_role** key (⚠️ this is secret - never share it!)
+
+⚠️ **Important:** These files contain secrets! Never commit them to git or share them publicly. (They're already in `.gitignore`)
 
 ---
 
-## Step 5: Start the App! (1 minute)
+## Step 5: Launch the App! 🚀
 
-Now for the moment of truth:
+You're ready! Let's start both the frontend and backend servers.
+
+### From the Project Root, Run:
 
 ```bash
 npm run dev
 ```
 
-You should see:
+### What You Should See:
+
 ```
 > dev
 > concurrently "npm run dev:frontend" "npm run dev:backend"
 
-[0] VITE v5.x.x  ready in xxx ms
-[0] ➜  Local:   http://localhost:5173/
+[1] 
+[1] > backend@1.0.0 dev
+[1] > nodemon src/index.ts
+[1] 
+[0] 
+[0] > frontend@0.0.0 dev
+[0] > vite
+[0] 
+[0]   VITE v5.x.x  ready in 500 ms
+[0] 
+[0]   ➜  Local:   http://localhost:5173/
+[0]   ➜  Network: use --host to expose
+[1] 
 [1] Server is running on http://localhost:5000
 ```
+
+✅ **Success!** Both servers are running:
+- **Frontend:** http://localhost:5173 (the website)
+- **Backend:** http://localhost:5000 (the API server)
+
+💡 **Keep this terminal window open** - this needs to stay running while you use the app.
 
 ---
 
@@ -358,65 +484,341 @@ Now that you're in, here's what to try:
 
 ---
 
-## 🔧 Common Issues & Solutions
+## 🔧 Troubleshooting Common Issues
 
-### "Failed to fetch todos"
-- Check that backend is running (look for "Server is running" in terminal)
-- Make sure `.env` has correct Supabase credentials
-- Try refreshing the page
+### ❌ "Cannot find module" or "Module not found" errors
 
-### "Signup failed"
-- Make sure you ran the SQL script in Supabase
-- Check Supabase dashboard > Authentication > Providers > Email is enabled
-- Try a different email address
+**Problem:** Dependencies weren't installed correctly.
 
-### Port already in use
-- Something else is using port 5173 or 5000
-- Either stop that process or change ports in:
-  - `frontend/vite.config.ts` (frontend port)
-  - `.env` (backend PORT variable)
+**Solution:**
+```bash
+# Delete all node_modules folders
+rm -rf node_modules frontend/node_modules backend/node_modules
 
-### Can't see team todos
-- Make sure you accepted the team invitation
-- Check Supabase > Table Editor > team_members to verify membership
-- Try refreshing the page
+# Delete all package-lock files
+rm -rf package-lock.json frontend/package-lock.json backend/package-lock.json
+
+# Reinstall everything
+npm run install:all
+```
 
 ---
 
-## 📚 Next Steps
+### ❌ "Port 5173 (or 5000) already in use"
 
-You're all set up! Here's what to explore next:
+**Problem:** Another app is using that port.
 
-1. **Read the Project Structure** - Understand how everything is organized
-   - Check out `docs/Project-Structure.md`
+**Quick Fix - Stop the other process:**
 
-2. **Try All the Features:**
-   - Create personal and team todos
-   - Use the calendar view
-   - Track work progress
-   - Send team invitations
-   - Check notifications
+**On Windows:**
+```bash
+# Find what's using port 5173
+netstat -ano | findstr :5173
 
-3. **Customize It:**
-   - Change colors in the CSS files
-   - Add new features
-   - Make it your own!
+# Kill it (replace PID with the number from above)
+taskkill /PID <PID> /F
+```
+
+**On Mac/Linux:**
+```bash
+# Find and kill process on port 5173
+lsof -ti:5173 | xargs kill -9
+
+# Or for port 5000
+lsof -ti:5000 | xargs kill -9
+```
+
+**Alternative - Change the port:**
+- Frontend: Edit `frontend/vite.config.ts` and change `port: 5173` to another number
+- Backend: Edit `backend/.env` and change `PORT=5000` to another number
 
 ---
 
-## 🆘 Still Stuck?
+### ❌ "Failed to fetch todos" or Network errors
 
-- Check the console in your browser (F12) for error messages
-- Look at the terminal output for backend errors
-- Review the Supabase logs in the dashboard
-- Make sure all environment variables are correct
-- Try stopping and restarting `npm run dev`
+**Possible causes:**
+
+1. **Backend not running**
+   - Check your terminal - do you see "Server is running on http://localhost:5000"?
+   - If not, make sure you ran `npm run dev` from the project root
+
+2. **Wrong Supabase credentials**
+   - Double-check `frontend/.env` and `backend/.env`
+   - Make sure the URLs and keys match exactly what's in Supabase
+   - No extra spaces or quotes!
+
+3. **Database tables not created**
+   - Go back to Step 3 and run the SQL script in Supabase
+   - Check Supabase → Table Editor → you should see `todos`, `teams`, etc.
+
+4. **CORS issues**
+   - Make sure `backend/src/index.ts` has CORS enabled (it should by default)
 
 ---
 
-## 🎉 You Did It!
+### ❌ "Signup failed" or "Authentication error"
 
-Congratulations! You've successfully set up the Sleekflow To-Do app. Now go forth and be productive! 🚀
+**Solutions:**
+
+1. **Enable email auth in Supabase:**
+   - Go to Supabase Dashboard
+   - Click **Authentication** → **Providers**
+   - Make sure **Email** is toggled ON
+   - Disable "Confirm email" if you want faster testing
+
+2. **Database tables missing:**
+   - Make sure you ran the full SQL script from Step 3
+   - Check that all RLS policies were created
+
+3. **Email already exists:**
+   - Try signing in instead of signing up
+   - Or use a different email address
+
+---
+
+### ❌ Can't see team todos or invitations
+
+**Check these:**
+
+1. **Are you in team mode?**
+   - Click the button at the top - it should say **"TeamDO."** (not "TODO.")
+
+2. **Did you accept the invitation?**
+   - Check the notifications bell (top right)
+   - Click "Accept" on any pending invitations
+
+3. **Check database:**
+   - Go to Supabase → Table Editor
+   - Look at `team_members` table
+   - You should see a row with your `user_id` and the `team_id`
+
+4. **Try refreshing:**
+   - Sometimes the app needs a refresh after accepting invitations
+   - Press `Ctrl+R` (or `Cmd+R` on Mac)
+
+---
+
+### ❌ "Work" button not working or progress not showing
+
+**Solutions:**
+
+1. **Make sure you're in team mode** - Work tracking is mainly for team tasks
+
+2. **Check work_sessions table:**
+   - Go to Supabase → Table Editor → `work_sessions`
+   - Should see entries when you start working
+
+3. **Backend might have crashed:**
+   - Check the terminal for error messages
+   - Try stopping (`Ctrl+C`) and restarting (`npm run dev`)
+
+---
+
+### ❌ Calendar not loading or showing wrong data
+
+**Try these:**
+
+1. **Hard refresh the page:**
+   - Windows: `Ctrl + Shift + R`
+   - Mac: `Cmd + Shift + R`
+
+2. **Clear browser cache:**
+   - Chrome/Edge: `Ctrl + Shift + Delete`
+   - Select "Cached images and files" and clear
+
+3. **Check console for errors:**
+   - Press `F12` to open DevTools
+   - Click **Console** tab
+   - Look for red error messages
+
+---
+
+### ❌ Still Stuck?
+
+**Here's what to check:**
+
+1. **Browser Console (F12):**
+   - Press F12 in your browser
+   - Look at the Console tab
+   - Red errors? Google them or check Supabase logs
+
+2. **Terminal Output:**
+   - Look at where you ran `npm run dev`
+   - Any error messages? They usually point to the problem
+
+3. **Supabase Logs:**
+   - Go to Supabase Dashboard
+   - Click **Logs** in the sidebar
+   - Check for recent errors
+
+4. **Environment Variables:**
+   - Print them to verify (add `console.log()` in code)
+   - Make sure no typos or extra spaces
+
+5. **Start Fresh:**
+   ```bash
+   # Stop the app (Ctrl+C)
+   # Clear everything
+   rm -rf node_modules frontend/node_modules backend/node_modules
+   # Reinstall
+   npm run install:all
+   # Restart
+   npm run dev
+   ```
+
+---
+
+## 📚 What to Do Next
+
+Now that everything is running, here's how to make the most of it:
+
+### 1. Explore the Features (15 minutes)
+
+**Personal Todos:**
+- Create a few personal tasks
+- Set different due dates
+- Try changing their status (Not Started → In Progress → Completed)
+- Switch to calendar view to see them visually
+
+**Team Collaboration:**
+- Click "TODO." to switch to "TeamDO."
+- Go to "Teams" view and create a team
+- Invite a friend (or use a second email account)
+- Create team tasks and watch them sync
+- Try the "Work" button to track who's working on what
+
+**Calendar Features:**
+- Click on different dates
+- See the sidebar update with day details
+- Click on task cards to see full progress modal
+- Watch work sessions appear in real-time
+
+### 2. Understand the Code (30 minutes)
+
+- **Read** `docs/Project-Structure.md` - Understand how files are organized
+- **Explore** the `frontend/src` folder - See how React components work
+- **Check out** `backend/src/routes` - See how the API works
+- **Look at** the Supabase database structure
+
+### 3. Make It Your Own
+
+Want to customize? Try these:
+
+**Change Colors:**
+- Edit `frontend/src/index.css` for global styles
+- Edit component CSS files for specific components
+- Search for color values (like `#007bff`) and replace them
+
+**Add Features:**
+- Add task priorities (high, medium, low)
+- Add file attachments
+- Add comments on tasks
+- Add task templates
+
+**Improve UI:**
+- Change fonts
+- Add animations
+- Redesign the calendar
+- Add dark mode
+
+---
+
+## 🛑 Stopping the App
+
+When you're done working:
+
+1. Go to the terminal where `npm run dev` is running
+2. Press `Ctrl + C` (or `Cmd + C` on Mac)
+3. Type `Y` if asked to terminate
+
+Your data is safe in Supabase - you can start the app again anytime with `npm run dev`!
+
+---
+
+## 🔄 Daily Development Workflow
+
+Once you're set up, here's your daily routine:
+
+```bash
+# 1. Navigate to project
+cd path/to/Sleekflow-To-Do-list
+
+# 2. Pull latest changes (if working with a team)
+git pull
+
+# 3. Install any new dependencies
+npm run install:all
+
+# 4. Start the app
+npm run dev
+
+# 5. Open browser to http://localhost:5173
+
+# 6. Start coding! 💻
+
+# 7. When done, Ctrl+C to stop
+```
+
+---
+
+## 📖 Additional Resources
+
+- **Project Structure:** See `docs/Project-Structure.md`
+- **Supabase Docs:** https://supabase.com/docs
+- **React Docs:** https://react.dev
+- **TypeScript Docs:** https://www.typescriptlang.org/docs
+- **Express Docs:** https://expressjs.com
+
+---
+
+## 🎉 Congratulations!
+
+You've successfully set up and launched the Sleekflow To-Do app locally! 🚀
+
+You now have:
+- ✅ A working full-stack application
+- ✅ A React frontend running on port 5173
+- ✅ An Express backend running on port 5000
+- ✅ A Supabase database with all tables and policies
+- ✅ Authentication working
+- ✅ Real-time team collaboration ready
+
+**You're ready to build something amazing!** 
 
 Happy coding! 💻✨
+
+---
+
+## 🌐 Want to Deploy This?
+
+Running it locally is great for development, but if you want to share it with others, you'll need to deploy it.
+
+### Quick Deployment Options:
+
+**Frontend (React):**
+- **Vercel** (recommended, free): https://vercel.com
+- **Netlify** (also great, free): https://netlify.com
+- **GitHub Pages** (free, but more setup): https://pages.github.com
+
+**Backend (Express):**
+- **Render** (recommended, free tier): https://render.com
+- **Railway** (easy, free tier): https://railway.app
+- **Heroku** ($7/month): https://heroku.com
+
+**Full Guide Coming Soon!** We'll add a detailed deployment guide in `docs/Deployment.md`
+
+### What You'll Need:
+1. Your Supabase project (already done! ✅)
+2. Environment variables set in your hosting platform
+3. Build your frontend: `cd frontend && npm run build`
+4. Deploy frontend build folder and backend separately
+
+💡 **Pro tip:** Keep using your existing Supabase database - just update the environment variables on your hosting platform!
+
+---
+
+*Need help? Check the troubleshooting section above or create an issue in the GitHub repository.*
+
+
+
 
